@@ -328,40 +328,4 @@ class AbsoluteId < ApplicationRecord
   def container_json
     json_attribute(container)
   end
-
-  def location_json
-    return {} if location.nil?
-
-    JSON.parse(location, symbolize_names: true)
-  end
-
-  def container_profile_json
-    return {} if container_profile.nil?
-
-    JSON.parse(container_profile, symbolize_names: true)
-  end
-
-  def repository_json
-    return {} if repository.nil?
-
-    JSON.parse(repository, symbolize_names: true)
-  end
-
-  def resource_json
-    return {} if resource.nil?
-
-    output = JSON.parse(resource, symbolize_names: true)
-    return {} unless output.is_a?(Hash)
-
-    output
-  end
-
-  def container_json
-    return {} if container.nil?
-
-    output = JSON.parse(container, symbolize_names: true)
-    return {} unless output.is_a?(Hash)
-
-    output
-  end
 end
