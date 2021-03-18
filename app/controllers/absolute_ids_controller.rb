@@ -236,9 +236,10 @@ class AbsoluteIdsController < ApplicationController
   end
 
   def session_params
-    params.permit(batch: [
+    params.permit(batches: [
                     :barcode,
                     :batch_size,
+                    :source,
                     :valid,
                     absolute_id: [
                       :barcode,
@@ -293,7 +294,7 @@ class AbsoluteIdsController < ApplicationController
                     ]
                   ])
 
-    elements = params.permit!.fetch(:batch, [])
+    elements = params.permit!.fetch(:batches, [])
     elements.map(&:to_h).map(&:deep_dup)
   end
 
