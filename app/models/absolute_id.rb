@@ -49,6 +49,33 @@ class AbsoluteId < ApplicationRecord
   end
 
   def self.generate(**attributes)
+    index = attributes[:index]
+
+    synchronize_status = NEVER_SYNCHRONIZED
+
+    barcode_value = if attributes.key?(:barcode)
+                      attributes.delete(:barcode)
+                    else
+                      default_barcode_value
+                    end
+
+    check_digit = barcode_value.last
+
+    model_attributes = attributes.merge({
+                                          value: barcode_value,
+                                          check_digit: check_digit,
+                                          index: index.to_i,
+                                          synchronize_status: synchronize_status
+                                        })
+
+    create(**model_attributes)
+  end
+
+  def self.default_barcode_value
+    format("%014d", 0)
+  end
+
+  def self.generate(**attributes)
     synchronize_status = NEVER_SYNCHRONIZED
 
     barcode_value = if attributes.key?(:barcode)
@@ -105,6 +132,15 @@ class AbsoluteId < ApplicationRecord
   end
   delegate :digits, :elements, to: :barcode
 
+  def prefix
+    self.class.find_prefix(container_profile_object)
+  end
+
+  def barcode
+    @barcode ||= self.class.barcode_class.new(value)
+  end
+  delegate :digits, :elements, to: :barcode
+
   def find_local_prefixes(key)
     self.class.local_prefixes[key]
   end
@@ -136,6 +172,21 @@ class AbsoluteId < ApplicationRecord
       container_profile
     end
   end
+
+  # For ASpace Locations
+  def location_object
+    OpenStruct.new(location_json)
+  end
+
+  ## For ASpace ContainerProfiles
+  def container_profile_object
+    OpenStruct.new(container_profile_json)
+  end
+
+  ## For ASpace Repositories
+  def repository_object
+    OpenStruct.new(repository_json)
+  end
   # @todo Deprecate #prefix in favor of #size
   alias prefix size
 
@@ -164,6 +215,11 @@ class AbsoluteId < ApplicationRecord
   ## For ASpace Repositories
   def repository_object
     OpenStruct.new(repository_json)
+  end
+
+  ## For ASpace Resources
+  def resource_object
+    OpenStruct.new(resource_json)
   end
 
   ## For ASpace Resources
@@ -230,6 +286,7 @@ class AbsoluteId < ApplicationRecord
   end
 
   # @todo Determine why this is required
+  # Not certain why this is required
   def as_json(**_args)
     attributes
   end
@@ -270,5 +327,41 @@ class AbsoluteId < ApplicationRecord
 
   def container_json
     json_attribute(container)
+  end
+
+  def location_json
+    return {} if location.nil?
+
+    JSON.parse(location, symbolize_names: true)
+  end
+
+  def container_profile_json
+    return {} if container_profile.nil?
+
+    JSON.parse(container_profile, symbolize_names: true)
+  end
+
+  def repository_json
+    return {} if repository.nil?
+
+    JSON.parse(repository, symbolize_names: true)
+  end
+
+  def resource_json
+    return {} if resource.nil?
+
+    output = JSON.parse(resource, symbolize_names: true)
+    return {} unless output.is_a?(Hash)
+
+    output
+  end
+
+  def container_json
+    return {} if container.nil?
+
+    output = JSON.parse(container, symbolize_names: true)
+    return {} unless output.is_a?(Hash)
+
+    output
   end
 end
