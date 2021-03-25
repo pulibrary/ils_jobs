@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 module Barcodes
-<<<<<<< HEAD
   class CreateModelFromAspaceJob < AbsoluteIds::CreateModelFromAspaceJob
-=======
-  class CreateModelFromAspaceJob < AbsoluteId::CreateModelFromAspaceJob
->>>>>>> [WIP] Refactoring ApplicationJobs and implementing support for the generation of barcodes without AbIDs
     def perform(properties:, user_id:)
       @user_id = user_id
 

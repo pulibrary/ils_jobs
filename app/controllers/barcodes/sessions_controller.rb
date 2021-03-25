@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
-<<<<<<< HEAD
 class Barcodes::SessionsController < AbsoluteIds::SessionsController
   skip_forgery_protection if: :token_header?
-
-  def self.create_session_job
-    Barcodes::CreateSessionJob
-=======
-class Barcodes::SessionsController < AbsoluteId::SessionsController
   skip_forgery_protection if: :token_header?
 
   def self.create_session_job
@@ -28,20 +22,18 @@ class Barcodes::SessionsController < AbsoluteId::SessionsController
         format.xml { render xml: @session }
       end
     end
->>>>>>> [WIP] Implementing the barcode-only routes
   end
 
   private
 
-<<<<<<< HEAD
   def current_sessions
     @current_sessions ||= begin
                             models = super.select(&:barcode_only?)
                             models.reverse
                           end
-=======
+  end
+
   def session_id
     params[:session_id]
->>>>>>> [WIP] Implementing the barcode-only routes
   end
 end
