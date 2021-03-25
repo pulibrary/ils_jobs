@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe "AbsoluteIds", type: :request do
-<<<<<<< HEAD
   let(:barcode) { '32101103191142' }
   let(:repository_id) { '4' }
   let(:resource_id) { 'ABID001' }
@@ -72,11 +71,6 @@ RSpec.describe "AbsoluteIds", type: :request do
   describe "GET /absolute-ids/:value" do
     let(:absolute_id) do
       AbsoluteId.generate(**model_attributes)
-=======
-  describe "GET /absolute-ids/:value" do
-    let(:absolute_id) do
-      AbsoluteId.generate
->>>>>>> [WIP] Implementing the test suites
     end
 
     xit "renders an existing absolute identifier" do
@@ -109,11 +103,7 @@ RSpec.describe "AbsoluteIds", type: :request do
         expect(json_response).to include("updated_at")
         expect(json_response["updated_at"]).not_to be_empty
         expect(json_response).to include("id" => 0)
-<<<<<<< HEAD
         expect(json_response).to include("size" => "P")
-=======
-        expect(json_response).to include("prefix" => "C")
->>>>>>> [WIP] Implementing the test suites
         expect(json_response).to include("synchronize_status" => "never synchronized")
       end
     end
@@ -138,17 +128,14 @@ RSpec.describe "AbsoluteIds", type: :request do
         xml_document = Nokogiri::XML(response.body)
         expect(xml_document.root.name).to eq("absolute_id")
         children = xml_document.root.elements
-<<<<<<< HEAD
         expect(children.length).to eq(10)
-=======
-        expect(children.length).to eq(6)
->>>>>>> [WIP] Implementing the test suites
+        #expect(children.length).to eq(6)
+        #expect(children.length).to eq(11)
 
         expect(children[0].name).to eq("barcode")
         expect(children[0]['type']).to be nil
         expect(children[0].content).not_to be_empty
 
-<<<<<<< HEAD
         expect(children[1].name).to eq("container_profile")
         expect(children[1]['type']).to be nil
         expect(children[1].content).not_to be_empty
@@ -184,27 +171,49 @@ RSpec.describe "AbsoluteIds", type: :request do
         expect(children[9].name).to eq("updated_at")
         expect(children[9]['type']).to eq("time")
         expect(children[9].content).not_to be_empty
-=======
-        expect(children[1].name).to eq("created_at")
-        expect(children[1]['type']).to eq("time")
+
+        #expect(children[1].name).to eq("created_at")
+        #expect(children[1]['type']).to eq("time")
+
+        expect(children[1].name).to eq("container")
+        expect(children[1]['type']).to be nil
         expect(children[1].content).not_to be_empty
 
-        expect(children[2].name).to eq("id")
-        expect(children[2]['type']).to eq "integer"
-        expect(children[2].content).to eq("0")
+        expect(children[2].name).to eq("container_profile")
+        expect(children[2]['type']).to be nil
+        expect(children[2].content).not_to be_empty
 
-        expect(children[3].name).to eq("prefix")
-        expect(children[3]['type']).to eq "string"
-        expect(children[3].content).to eq("C")
+        expect(children[3].name).to eq("created_at")
+        expect(children[3]['type']).to eq("time")
+        expect(children[3].content).not_to be_empty
 
-        expect(children[4].name).to eq("synchronize_status")
-        expect(children[4]['type']).to eq "string"
-        expect(children[4].content).to eq("never synchronized")
+        expect(children[4].name).to eq("id")
+        expect(children[4]['type']).to eq "integer"
+        expect(children[4].content).to eq("0")
 
-        expect(children[5].name).to eq("updated_at")
-        expect(children[5]['type']).to eq("time")
+        expect(children[5].name).to eq("location")
+        expect(children[5]['type']).to be nil
         expect(children[5].content).not_to be_empty
->>>>>>> [WIP] Implementing the test suites
+
+        expect(children[6].name).to eq("size")
+        expect(children[6]['type']).to eq "string"
+        expect(children[6].content).to eq("P")
+
+        expect(children[7].name).to eq("repository")
+        expect(children[7]['type']).to be nil
+        expect(children[7].content).not_to be_empty
+
+        expect(children[8].name).to eq("resource")
+        expect(children[8]['type']).to be nil
+        expect(children[8].content).not_to be_empty
+
+        expect(children[9].name).to eq("synchronize_status")
+        expect(children[9]['type']).to eq "string"
+        expect(children[9].content).to eq("never synchronized")
+
+        expect(children[10].name).to eq("updated_at")
+        expect(children[10]['type']).to eq("time")
+        expect(children[10].content).not_to be_empty
       end
     end
   end
@@ -264,7 +273,6 @@ RSpec.describe "AbsoluteIds", type: :request do
         json_response = JSON.parse(response.body)
 
         expect(json_response).to be_an(Array)
-<<<<<<< HEAD
         expect(json_response).not_to be_empty
 
         expect(json_response.last).to include("batches")
@@ -285,18 +293,18 @@ RSpec.describe "AbsoluteIds", type: :request do
 
         expect(absolute_ids.last).to include("barcode")
         expect(absolute_ids.last["barcode"]).to include("value" => "32101103191159")
-=======
+
         expect(json_response.length).to eq(1)
+        expect(json_response).not_to be_empty
 
         expect(json_response.first).to include("batches")
         batches_json = json_response.first["batches"]
 
-        expect(batches_json.length).to eq(1)
+        expect(batches_json).not_to be_empty
         batch_json = batches_json.first
 
-        batch = AbsoluteId::Batch.first
-        expect(batch_json).to include("id" => batch.id)
-        expect(batch_json).to include("label" => batch.label)
+        expect(batch_json).to include("id" => 1)
+        expect(batch_json).to include("label" => "Batch 000001")
         expect(batch_json).to include("table_data")
 
         table_json = batch_json["table_data"]
@@ -462,7 +470,6 @@ RSpec.describe "AbsoluteIds", type: :request do
             expect(AbsoluteId.first.barcode.value).to eq("32101103191142")
           end
         end
->>>>>>> [WIP] Implementing the test suites
       end
     end
   end

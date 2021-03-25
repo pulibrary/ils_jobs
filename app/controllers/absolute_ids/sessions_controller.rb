@@ -11,7 +11,7 @@ class AbsoluteIds::SessionsController < ApplicationController
 
     respond_to do |format|
       format.html { render :index }
-      format.json { render json: sessions }
+      format.json { render json: @sessions }
     end
   end
 
@@ -24,7 +24,6 @@ class AbsoluteIds::SessionsController < ApplicationController
   def create
     authorize!(:create, AbsoluteId::Session)
     @session = self.class.create_session_job.perform_now(session_attributes: session_params, user_id: current_user.id)
-    #authorize!(:create_sessions, AbsoluteId::Session)
 
     respond_to do |format|
       format.html do
@@ -93,22 +92,6 @@ class AbsoluteIds::SessionsController < ApplicationController
     @session ||= begin
                    AbsoluteId::Session.find_by(user: current_user, id: session_id)
                  end
-  end
-
-  def batches
-    @batches ||= begin
-                   return [] if @session.nil?
-
-                   @session.batches
-                 end
-  end
-
-  def absolute_ids
-    @absolute_ids ||= begin
-                        return [] if @batches.nil?
-
-                        batches.map(&:absolute_ids).flatten
-                      end
   end
 
   def batches
