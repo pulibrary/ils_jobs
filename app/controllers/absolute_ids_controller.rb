@@ -3,6 +3,7 @@
 class AbsoluteIdsController < ApplicationController
   helper_method :index_status, :table_columns
   skip_forgery_protection if: :token_header?
+  include TokenAuthorizedController
 
   def table_columns
     [
@@ -18,26 +19,11 @@ class AbsoluteIdsController < ApplicationController
     ]
   end
 
-  # This should be moved to a separate controller
-  # GET /absolute-ids
-  # GET /absolute-ids.json
-  def index
-    @sessions ||= begin
-                    models = AbsoluteId::Session.where(user: current_user)
-                    models.reverse
-                  end
-
-    respond_to do |format|
-      format.html { render :index }
-      format.json { render json: @sessions }
-    end
-  end
-
   # GET /absolute-ids/:value
   # GET /absolute-ids/:value.json
   # GET /absolute-ids/:value.xml
   def show
-    @absolute_id ||= AbsoluteId.find_by(value: value)
+    @absolute_id ||= AbsoluteId.find_by(value: value_param)
 
     respond_to do |format|
       format.json { render json: @absolute_id }
@@ -48,7 +34,7 @@ class AbsoluteIdsController < ApplicationController
   # POST /absolute-ids
   # POST /absolute-ids.json
   def create
-    authorize! :create, AbsoluteId
+    authorize!(:create, AbsoluteId)
     @absolute_id = AbsoluteId.generate(**absolute_id_params)
 
     respond_to do |format|
@@ -123,7 +109,7 @@ class AbsoluteIdsController < ApplicationController
   # POST /absolute-ids/synchronize
   # POST /absolute-ids/synchronize.json
   def synchronize
-    authorize! :synchronize, AbsoluteId
+    authorize!(:synchronize, AbsoluteId)
 
     session_id = params[:session_id]
     @session = AbsoluteId::Session.find_by(user: current_user, id: session_id)
@@ -140,28 +126,10 @@ class AbsoluteIdsController < ApplicationController
     end
   end
 
-  # This needs to be moved to another controller
-  def show_session
-    session_id = params[:session_id]
-    @session ||= begin
-                   AbsoluteId::Session.find_by(user: current_user, id: session_id)
-                 end
-
-    if request.format.text?
-      render text: @session.to_txt
-    else
-      respond_to do |format|
-        format.json { render json: @session }
-        format.yaml { render yaml: @session.to_yaml }
-        format.xml { render xml: @session }
-      end
-    end
-  end
-
   # PATCH /absolute-ids
   # PATCH /absolute-ids.json
   def update
-    authorize! :update, AbsoluteId
+    authorize!(:update, AbsoluteId)
     @absolute_id = AbsoluteId.create_or_update(**absolute_id_params)
 
     respond_to do |format|
@@ -191,111 +159,10 @@ class AbsoluteIdsController < ApplicationController
     end
   end
 
-  def batches
-    @batches ||= begin
-                   return [] if @session.nil?
-
-                   @session.batches
-                 end
-  end
-
-  def absolute_ids
-    @absolute_ids ||= begin
-                        return [] if @batches.nil?
-
-                        batches.map(&:absolute_ids).flatten
-                      end
-  end
-
-  def index_status
-    "No absolute IDs have been generated yet." if absolute_ids.empty?
-  end
-
   private
 
-  def value
+  def value_param
     params[:value]
-  end
-
-  def token_header?
-    token_header.present?
-  end
-
-  def current_user_token
-    token_header || current_user_params[:token]
-  end
-
-  def find_user
-    User.find_by(id: current_user_id, token: current_user_token)
-  end
-
-  def current_user
-    return super if !super.nil? || current_user_params.nil?
-
-    @current_user ||= find_user
-  end
-
-  def session_params
-    params.permit(batches: [
-                    :barcode,
-                    :batch_size,
-                    :source,
-                    :valid,
-                    absolute_id: [
-                      :barcode,
-                      :container,
-                      container_profile: [
-                        :create_time,
-                        :id,
-                        :lock_version,
-                        :system_mtime,
-                        :uri,
-                        :user_mtime,
-                        :name,
-                        :prefix
-                      ],
-                      location: [
-                        :create_time,
-                        :id,
-                        :lock_version,
-                        :system_mtime,
-                        :uri,
-                        :user_mtime,
-                        :area,
-                        :barcode,
-                        :building,
-                        :classification,
-                        :external_ids,
-                        :floor,
-                        :functions,
-                        :room,
-                        :temporary
-                      ],
-                      repository: [
-                        :create_time,
-                        :id,
-                        :lock_version,
-                        :system_mtime,
-                        :uri,
-                        :user_mtime,
-                        :name,
-                        :repo_code
-                      ],
-                      resource: [
-                        :create_time,
-                        :id,
-                        :lock_version,
-                        :system_mtime,
-                        :uri,
-                        :user_mtime,
-                        :name,
-                        :repo_code
-                      ]
-                    ]
-                  ])
-
-    elements = params.permit!.fetch(:batches, [])
-    elements.map(&:to_h).map(&:deep_dup)
   end
 
   def absolute_id_params

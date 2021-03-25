@@ -2,12 +2,33 @@
 
 class AbsoluteIds::SessionsController < ApplicationController
   skip_forgery_protection if: :token_header?
+  include TokenAuthorizedController
+
+  # GET /absolute-ids/sessions
+  # GET /absolute-ids/sessions.json
+  # GET /absolute-ids
+  # GET /absolute-ids.json
+  def index
+    @sessions ||= begin
+                    models = AbsoluteId::Session.where(user: current_user)
+                    models.reverse
+                  end
+
+    respond_to do |format|
+      format.html { render :index }
+      format.json { render json: @sessions }
+    end
+  end
+
+  def self.create_session_job
+    AbsoluteIds::CreateSessionJob
+  end
 
   # POST /absolute-ids/sessions
   # POST /absolute-ids/sessions.json
   def create
-    authorize!(:create_sessions, AbsoluteId::Session)
-    @session = ::AbsoluteIdCreateSessionJob.perform_now(session_attributes: session_params, user_id: current_user.id)
+    authorize!(:create, AbsoluteId::Session)
+    @session = self.class.create_session_job.perform_now(session_attributes: session_params, user_id: current_user.id)
 
     respond_to do |format|
       format.html do
@@ -77,7 +98,86 @@ class AbsoluteIds::SessionsController < ApplicationController
 
   private
 
+  def batches
+    @batches ||= begin
+                   return [] if @session.nil?
+
+                   @session.batches
+                 end
+  end
+
+  def absolute_ids
+    @absolute_ids ||= begin
+                        return [] if @batches.nil?
+
+                        batches.map(&:absolute_ids).flatten
+                      end
+  end
+
   def session_id
     params[:session_id]
+  end
+
+  def session_params
+    params.permit(batches: [
+                    :barcode,
+                    :batch_size,
+                    :source,
+                    :valid,
+                    absolute_id: [
+                      :barcode,
+                      :container,
+                      container_profile: [
+                        :create_time,
+                        :id,
+                        :lock_version,
+                        :system_mtime,
+                        :uri,
+                        :user_mtime,
+                        :name,
+                        :prefix
+                      ],
+                      location: [
+                        :create_time,
+                        :id,
+                        :lock_version,
+                        :system_mtime,
+                        :uri,
+                        :user_mtime,
+                        :area,
+                        :barcode,
+                        :building,
+                        :classification,
+                        :external_ids,
+                        :floor,
+                        :functions,
+                        :room,
+                        :temporary
+                      ],
+                      repository: [
+                        :create_time,
+                        :id,
+                        :lock_version,
+                        :system_mtime,
+                        :uri,
+                        :user_mtime,
+                        :name,
+                        :repo_code
+                      ],
+                      resource: [
+                        :create_time,
+                        :id,
+                        :lock_version,
+                        :system_mtime,
+                        :uri,
+                        :user_mtime,
+                        :name,
+                        :repo_code
+                      ]
+                    ]
+                  ])
+
+    elements = params.permit!.fetch(:batches, [])
+    elements.map(&:to_h).map(&:deep_dup)
   end
 end

@@ -32,8 +32,6 @@ class AbsoluteId < ApplicationRecord
   end
 
   def self.generate(**attributes)
-    index = attributes[:index]
-
     synchronize_status = NEVER_SYNCHRONIZED
 
     barcode_value = if attributes.key?(:barcode)
@@ -47,14 +45,13 @@ class AbsoluteId < ApplicationRecord
     model_attributes = attributes.merge({
                                           value: barcode_value,
                                           check_digit: check_digit,
-                                          index: index.to_i,
                                           synchronize_status: synchronize_status
                                         })
 
     create(**model_attributes)
   end
 
-  def self.prefixes
+  def self.sizes
     {
       'Objects' => 'C',
 
@@ -81,20 +78,16 @@ class AbsoluteId < ApplicationRecord
     }
   end
 
-  def self.default_prefix
-    'C'
+  def self.find_size(key)
+    return unless sizes.key?(key)
+
+    sizes[key]
   end
 
-  def self.find_prefix(container_profile)
-    return default_prefix unless prefixes.key?(container_profile.name)
-
-    prefixes[container_profile.name]
-  end
-
-  def self.find_prefixed_models(prefix:)
+  def self.find_sizeed_models(size:)
     models = all
     models.select do |model|
-      model.prefix == prefix
+      model.size == size
     end
   end
 
@@ -107,14 +100,20 @@ class AbsoluteId < ApplicationRecord
   end
   delegate :digits, :elements, to: :barcode
 
-  def prefix
-    self.class.find_prefix(container_profile_object)
+  def size
+    if container_profile_object.name
+      self.class.find_size(container_profile_object.name)
+    elsif self.class.sizes.key?(container_profile)
+      self.class.find_size(container_profile)
+    else
+      self.class.sizes.invert[container_profile]
+    end
   end
 
   def label
-    return if location.nil?
+    return if index.nil? || size.nil?
 
-    format("%s-%06d", prefix, index)
+    format("%s-%06d", size, index)
   end
 
   # For ASpace Locations
@@ -186,7 +185,7 @@ class AbsoluteId < ApplicationRecord
       id: index.to_i,
       label: label,
       location: location_object.to_h,
-      prefix: prefix,
+      size: size,
       repository: repository_object.to_h,
       resource: resource_object.to_h,
       synchronize_status: synchronize_status,
