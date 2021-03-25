@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Barcodes
-  class CreateModelFromAspaceJob < AbsoluteId::CreateModelFromAspaceJob
+  class CreateModelFromAspaceJob < AbsoluteIds::CreateModelFromAspaceJob
     def perform(properties:, user_id:)
       @user_id = user_id
 

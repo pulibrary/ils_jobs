@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Barcodes
-  class CreateModelJob < AbsoluteId::CreateModelJob
+  class CreateModelJob < AbsoluteIds::CreateModelJob
     def self.aspace_source_job
       CreateModelFromAspaceJob
     end

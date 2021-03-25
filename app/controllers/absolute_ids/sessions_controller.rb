@@ -4,19 +4,12 @@ class AbsoluteIds::SessionsController < ApplicationController
   skip_forgery_protection if: :token_header?
   include TokenAuthorizedController
 
-  # GET /absolute-ids/sessions
-  # GET /absolute-ids/sessions.json
   # GET /absolute-ids
   # GET /absolute-ids.json
   def index
-    @sessions ||= begin
-                    models = AbsoluteId::Session.where(user: current_user)
-                    models.reverse
-                  end
-
     respond_to do |format|
       format.html { render :index }
-      format.json { render json: @sessions }
+      format.json { render json: sessions }
     end
   end
 
@@ -179,5 +172,12 @@ class AbsoluteIds::SessionsController < ApplicationController
 
     elements = params.permit!.fetch(:batches, [])
     elements.map(&:to_h).map(&:deep_dup)
+  end
+
+  def sessions
+    @sessions ||= begin
+                    models = AbsoluteId::Session.where(user: current_user)
+                    models.reverse
+                  end
   end
 end
