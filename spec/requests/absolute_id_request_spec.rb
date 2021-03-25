@@ -46,6 +46,7 @@ RSpec.describe "AbsoluteIds", type: :request do
   let(:resource) do
     JSON.parse(resource_fixture)
   end
+  # 
   let(:container_fixture_path) do
     Rails.root.join('spec', 'fixtures', 'archives_space', 'top_container.json')
   end
@@ -170,6 +171,22 @@ RSpec.describe "AbsoluteIds", type: :request do
         expect(children[6].name).to eq("size")
         expect(children[6]['type']).to eq "string"
         expect(children[6].content).to eq("P")
+
+        expect(children[7].name).to eq("repository")
+        expect(children[7]['type']).to be nil
+        expect(children[7].content).not_to be_empty
+
+        expect(children[8].name).to eq("resource")
+        expect(children[8]['type']).to be nil
+        expect(children[8].content).not_to be_empty
+
+        expect(children[9].name).to eq("synchronize_status")
+        expect(children[9]['type']).to eq "string"
+        expect(children[9].content).to eq("never synchronized")
+
+        expect(children[10].name).to eq("updated_at")
+        expect(children[10]['type']).to eq("time")
+        expect(children[10].content).not_to be_empty
       end
     end
   end
@@ -247,218 +264,6 @@ RSpec.describe "AbsoluteIds", type: :request do
 
         expect(table_json.first).to include("barcode" => "32101103191142")
         expect(table_json.last).to include("barcode" => "32101103191159")
-      end
-    end
-  end
-
-  describe "POST /absolute-ids/" do
-    xit "renders all the absolute identifiers" do
-      post "/absolute-ids/"
-      # Pending
-    end
-
-    context "when requesting a JSON representation" do
-      let(:headers) do
-        {
-          "Accept" => "application/json"
-        }
-      end
-      let(:repository_id) { '4' }
-      let(:ead_id) { 'ABID001' }
-      let(:resource_id) { '4188' }
-      let(:container_profile) do
-        {
-          create_time: "2021-01-21T20:10:59Z",
-          id: "2",
-          lock_version: 873,
-          system_mtime: "2021-01-25T05:10:46Z",
-          uri: "/container_profiles/2",
-          user_mtime: "2021-01-21T20:10:59Z",
-          name: "Elephant size box",
-          prefix: "P"
-        }
-      end
-      let(:location) do
-        {
-          create_time: "2021-01-22T22:29:46Z",
-          id: "23640",
-          lock_version: 0,
-          system_mtime: "2021-01-22T22:29:47Z",
-          uri: "/locations/23640",
-          user_mtime: "2021-01-22T22:29:46Z",
-          area: "Annex B",
-          barcode: nil,
-          building: "Annex",
-          classification: "anxb",
-          external_ids: [],
-          floor: nil,
-          functions: [],
-          room: nil,
-          temporary: nil
-        }
-      end
-      let(:repository) do
-        {
-          create_time: "2016-06-27T14:10:42Z",
-          id: repository_id,
-          lock_version: 1,
-          system_mtime: "2021-01-22T22:20:30Z",
-          uri: "/repositories/4",
-          user_mtime: "2021-01-22T22:20:30Z",
-          name: "University Archives",
-          repo_code: "univarchives"
-        }
-      end
-      let(:params) do
-        {
-          user: {
-            id: user.id
-          },
-          batches: [
-            absolute_id: {
-              barcode: barcode,
-              container: "1",
-              container_profile: container_profile,
-              location: location,
-              repository: repository,
-              resource: resource_id
-            },
-            barcodes: [
-              barcode
-            ],
-            batch_size: 1,
-            source: source,
-            valid: true
-          ]
-        }
-      end
-
-      context "when the client passes an invalid JSON Web Token" do
-        let(:user) do
-          User.create(email: 'user@localhost')
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer invalid"
-          }
-        end
-
-        let(:params) do
-          {
-            user: { id: user.id }
-          }
-        end
-
-        before do
-          user
-        end
-
-        it "denies the request" do
-          post "/absolute-ids/", headers: headers, params: params
-
-          expect(response.forbidden?).to be true
-        end
-      end
-
-      context "when the client does not pass a user ID" do
-        let(:user) do
-          User.create(email: 'user@localhost')
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer #{user.token}"
-          }
-        end
-
-        before do
-          user
-        end
-
-        it "denies the request" do
-          post "/absolute-ids/", headers: headers
-
-          expect(response.forbidden?).to be true
-        end
-      end
-
-      context "when the client is authenticated" do
-        let(:user) do
-          create(:user)
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer #{user.token}"
-          }
-        end
-
-        context "and requests a prefix and starting code" do
-          let(:params) do
-            {
-              user: {
-                id: user.id
-              },
-              batch: [
-                absolute_id: {
-                  barcode: "32101103191142",
-                  container: "1",
-                  container_profile: {
-                    create_time: "2021-01-21T20:10:59Z",
-                    id: "2",
-                    lock_version: 873,
-                    system_mtime: "2021-01-25T05:10:46Z",
-                    uri: "/container_profiles/2",
-                    user_mtime: "2021-01-21T20:10:59Z",
-                    name: "Elephant size box",
-                    prefix: "P"
-                  },
-                  location: {
-                    create_time: "2021-01-22T22:29:46Z",
-                    id: "23640",
-                    lock_version: 0,
-                    system_mtime: "2021-01-22T22:29:47Z",
-                    uri: "/locations/23640",
-                    user_mtime: "2021-01-22T22:29:46Z",
-                    area: "Annex B",
-                    barcode: nil,
-                    building: "Annex",
-                    classification: "anxb",
-                    external_ids: [],
-                    floor: nil,
-                    functions: [],
-                    room: nil,
-                    temporary: nil
-                  },
-                  repository: {
-                    create_time: "2016-06-27T14:10:42Z",
-                    id: "4",
-                    lock_version: 1,
-                    system_mtime: "2021-01-22T22:20:30Z",
-                    uri: "/repositories/4",
-                    user_mtime: "2021-01-22T22:20:30Z",
-                    name: "University Archives",
-                    repo_code: "univarchives"
-                  },
-                  resource: "ABID001",
-                  source: 'aspace'
-                },
-                barcodes: [
-                  "32101103191142"
-                ],
-                batch_size: 1,
-                valid: true
-              ]
-            }
-          end
-          let(:repository_id) { '4' }
-          let(:ead_id) { 'ABID001' }
-          let(:resource_id) { '4188' }
-        end
       end
     end
   end

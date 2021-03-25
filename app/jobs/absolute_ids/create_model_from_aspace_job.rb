@@ -20,7 +20,10 @@ module AbsoluteIds
       container_resource.to_json
     end
 
+<<<<<<< HEAD
     # @todo Should this be removed?
+=======
+>>>>>>> [WIP] Refactoring ApplicationJobs and implementing support for the generation of barcodes without AbIDs
     def build_location(properties)
       properties.to_json
     end

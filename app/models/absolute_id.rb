@@ -49,8 +49,6 @@ class AbsoluteId < ApplicationRecord
   end
 
   def self.generate(**attributes)
-    index = attributes[:index]
-
     synchronize_status = NEVER_SYNCHRONIZED
 
     barcode_value = if attributes.key?(:barcode)
@@ -64,14 +62,13 @@ class AbsoluteId < ApplicationRecord
     model_attributes = attributes.merge({
                                           value: barcode_value,
                                           check_digit: check_digit,
-                                          index: index.to_i,
                                           synchronize_status: synchronize_status
                                         })
 
     create(**model_attributes)
   end
 
-  def self.prefixes
+  def self.sizes
     {
       'Objects' => 'C',
 
@@ -98,16 +95,16 @@ class AbsoluteId < ApplicationRecord
     }
   end
 
-  def self.find_prefix(key)
-    return unless prefixes.key?(key)
+  def self.find_size(key)
+    return unless sizes.key?(key)
 
-    prefixes[key]
+    sizes[key]
   end
 
-  def self.find_prefixed_models(prefix:)
+  def self.find_sizeed_models(size:)
     models = all
     models.select do |model|
-      model.size == prefix
+      model.size == size
     end
   end
 
@@ -120,22 +117,13 @@ class AbsoluteId < ApplicationRecord
   end
   delegate :digits, :elements, to: :barcode
 
-  def prefix
-    self.class.find_prefix(container_profile_object)
-  end
-
-  def barcode
-    @barcode ||= self.class.barcode_class.new(value)
-  end
-  delegate :digits, :elements, to: :barcode
-
   def size
     if container_profile_object.name
-      self.class.find_prefix(container_profile_object.name)
-    elsif self.class.prefixes.key?(container_profile)
-      self.class.find_prefix(container_profile)
+      self.class.find_size(container_profile_object.name)
+    elsif self.class.sizes.key?(container_profile)
+      self.class.find_size(container_profile)
     else
-      container_profile
+      self.class.sizes.invert[container_profile]
     end
   end
 
