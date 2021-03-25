@@ -9,10 +9,10 @@ class Barcodes::SessionsController < AbsoluteIds::SessionsController
 
   private
 
-  def sessions
-    @sessions ||= begin
-                    models = super.select(&:barcode_only?)
-                    models.reverse
-                  end
+  def current_sessions
+    @current_sessions ||= begin
+                            models = super.select(&:barcode_only?)
+                            models.reverse
+                          end
   end
 end

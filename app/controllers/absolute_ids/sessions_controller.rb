@@ -7,9 +7,11 @@ class AbsoluteIds::SessionsController < ApplicationController
   # GET /absolute-ids
   # GET /absolute-ids.json
   def index
+    @sessions = current_sessions
+
     respond_to do |format|
       format.html { render :index }
-      format.json { render json: sessions }
+      format.json { render json: @sessions }
     end
   end
 
@@ -174,10 +176,10 @@ class AbsoluteIds::SessionsController < ApplicationController
     elements.map(&:to_h).map(&:deep_dup)
   end
 
-  def sessions
-    @sessions ||= begin
-                    models = AbsoluteId::Session.where(user: current_user)
-                    models.reverse
-                  end
+  def current_sessions
+    @current_sessions ||= begin
+                            models = AbsoluteId::Session.where(user: current_user)
+                            models.reverse
+                          end
   end
 end
