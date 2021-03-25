@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe "Barcodes", type: :request do
-<<<<<<< HEAD
   let(:barcode) { '32101103191142' }
   let(:repository_id) { '4' }
   let(:resource_id) { 'ABID001' }
@@ -74,11 +73,6 @@ RSpec.describe "Barcodes", type: :request do
   describe "GET /barcodes/:value" do
     let(:absolute_id) do
       AbsoluteId.generate(**model_attributes)
-=======
-  describe "GET /barcodes/:value" do
-    let(:absolute_id) do
-      AbsoluteId.generate(index: nil)
->>>>>>> [WIP] Implementing the test suites
     end
 
     xit "renders an existing absolute identifier" do
@@ -111,11 +105,7 @@ RSpec.describe "Barcodes", type: :request do
         expect(json_response).to include("updated_at")
         expect(json_response["updated_at"]).not_to be_empty
         expect(json_response).to include("id" => 0)
-<<<<<<< HEAD
         expect(json_response).to include("size" => "P")
-=======
-        expect(json_response).to include("prefix" => "C")
->>>>>>> [WIP] Implementing the test suites
         expect(json_response).to include("synchronize_status" => "never synchronized")
       end
     end
@@ -140,17 +130,12 @@ RSpec.describe "Barcodes", type: :request do
         xml_document = Nokogiri::XML(response.body)
         expect(xml_document.root.name).to eq("absolute_id")
         children = xml_document.root.elements
-<<<<<<< HEAD
         expect(children.length).to eq(10)
-=======
-        expect(children.length).to eq(6)
->>>>>>> [WIP] Implementing the test suites
 
         expect(children[0].name).to eq("barcode")
         expect(children[0]['type']).to be nil
         expect(children[0].content).not_to be_empty
 
-<<<<<<< HEAD
         expect(children[1].name).to eq("container_profile")
         expect(children[1]['type']).to be nil
         expect(children[1].content).not_to be_empty
@@ -186,27 +171,6 @@ RSpec.describe "Barcodes", type: :request do
         expect(children[9].name).to eq("updated_at")
         expect(children[9]['type']).to eq("time")
         expect(children[9].content).not_to be_empty
-=======
-        expect(children[1].name).to eq("created_at")
-        expect(children[1]['type']).to eq("time")
-        expect(children[1].content).not_to be_empty
-
-        expect(children[2].name).to eq("id")
-        expect(children[2]['type']).to eq "integer"
-        expect(children[2].content).to eq("0")
-
-        expect(children[3].name).to eq("prefix")
-        expect(children[3]['type']).to eq "string"
-        expect(children[3].content).to eq("C")
-
-        expect(children[4].name).to eq("synchronize_status")
-        expect(children[4]['type']).to eq "string"
-        expect(children[4].content).to eq("never synchronized")
-
-        expect(children[5].name).to eq("updated_at")
-        expect(children[5]['type']).to eq("time")
-        expect(children[5].content).not_to be_empty
->>>>>>> [WIP] Implementing the test suites
       end
     end
   end
@@ -249,13 +213,8 @@ RSpec.describe "Barcodes", type: :request do
           "Authorization" => "Bearer #{user.token}"
         }
       end
-<<<<<<< HEAD
       let(:absolute_id1) { create(:absolute_id, value: '32101103191142', index: 0) }
       let(:absolute_id2) { create(:absolute_id, value: '32101103191159', check_digit: '9', index: 1) }
-=======
-      let(:absolute_id1) { create(:absolute_id, value: '32101103191142') }
-      let(:absolute_id2) { create(:absolute_id, value: '32101103191159') }
->>>>>>> [WIP] Implementing the test suites
       let(:absolute_id_batch) { create(:absolute_id_batch, absolute_ids: [absolute_id1, absolute_id2], user: user) }
       let(:absolute_id_session) { create(:absolute_id_session, batches: [absolute_id_batch], user: user) }
 
@@ -282,7 +241,6 @@ RSpec.describe "Barcodes", type: :request do
         batch = AbsoluteId::Batch.first
         expect(batch_json).to include("id" => batch.id)
         expect(batch_json).to include("label" => batch.label)
-<<<<<<< HEAD
         expect(batch_json).to include("absolute_ids")
 
         absolute_ids = batch_json["absolute_ids"]
@@ -293,173 +251,6 @@ RSpec.describe "Barcodes", type: :request do
 
         expect(absolute_ids.last).to include("barcode")
         expect(absolute_ids.last["barcode"]).to include("value" => "32101103191159")
-=======
-        expect(batch_json).to include("table_data")
-
-        table_json = batch_json["table_data"]
-        expect(table_json.length).to eq(2)
-
-        expect(table_json.first).to include("barcode" => "32101103191142")
-        expect(table_json.last).to include("barcode" => "32101103191159")
-      end
-    end
-  end
-
-  describe "POST /absolute-ids/" do
-    xit "renders all the absolute identifiers" do
-      post "/absolute-ids/"
-      # Pending
-    end
-
-    context "when requesting a JSON representation" do
-      let(:headers) do
-        {
-          "Accept" => "application/json"
-        }
-      end
-
-      context "when the client passes an invalid JSON Web Token" do
-        let(:user) do
-          User.create(email: 'user@localhost')
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer invalid"
-          }
-        end
-
-        let(:params) do
-          {
-            user: { id: user.id }
-          }
-        end
-
-        before do
-          user
-        end
-
-        it "denies the request" do
-          post "/absolute-ids/", headers: headers, params: params
-
-          expect(response.forbidden?).to be true
-        end
-      end
-
-      context "when the client does not pass a user ID" do
-        let(:user) do
-          User.create(email: 'user@localhost')
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer #{user.token}"
-          }
-        end
-
-        before do
-          user
-        end
-
-        it "denies the request" do
-          post "/absolute-ids/", headers: headers
-
-          expect(response.forbidden?).to be true
-        end
-      end
-
-      context "when the client is authenticated" do
-        let(:user) do
-          create(:user)
-        end
-
-        let(:headers) do
-          {
-            "Accept" => "application/json",
-            "Authorization" => "Bearer #{user.token}"
-          }
-        end
-
-        context "and requests a prefix and starting code" do
-          let(:params) do
-            {
-              user: {
-                id: user.id
-              },
-              batch: [
-                absolute_id: {
-                  barcode: "32101103191142",
-                  container: "1",
-                  container_profile: {
-                    create_time: "2021-01-21T20:10:59Z",
-                    id: "2",
-                    lock_version: 873,
-                    system_mtime: "2021-01-25T05:10:46Z",
-                    uri: "/container_profiles/2",
-                    user_mtime: "2021-01-21T20:10:59Z",
-                    name: "Elephant size box",
-                    prefix: "P"
-                  },
-                  location: {
-                    create_time: "2021-01-22T22:29:46Z",
-                    id: "23640",
-                    lock_version: 0,
-                    system_mtime: "2021-01-22T22:29:47Z",
-                    uri: "/locations/23640",
-                    user_mtime: "2021-01-22T22:29:46Z",
-                    area: "Annex B",
-                    barcode: nil,
-                    building: "Annex",
-                    classification: "anxb",
-                    external_ids: [],
-                    floor: nil,
-                    functions: [],
-                    room: nil,
-                    temporary: nil
-                  },
-                  repository: {
-                    create_time: "2016-06-27T14:10:42Z",
-                    id: "4",
-                    lock_version: 1,
-                    system_mtime: "2021-01-22T22:20:30Z",
-                    uri: "/repositories/4",
-                    user_mtime: "2021-01-22T22:20:30Z",
-                    name: "University Archives",
-                    repo_code: "univarchives"
-                  },
-                  resource: "ABID001",
-                  source: 'aspace'
-                },
-                barcodes: [
-                  "32101103191142"
-                ],
-                batch_size: 1,
-                valid: true
-              ]
-            }
-          end
-          let(:repository_id) { '4' }
-          let(:ead_id) { 'ABID001' }
-          let(:resource_id) { '4188' }
-
-          before do
-            stub_aspace_resource(repository_id: repository_id, resource_id: resource_id, ead_id: ead_id)
-          end
-
-          it "generates a new Ab. ID with the new prefix and uses the starting code" do
-            expect(AbsoluteId.all).to be_empty
-
-            post "/absolute-ids/", headers: headers, params: params
-
-            expect(response).to redirect_to(absolute_ids_path(format: :json))
-            expect(AbsoluteId.all).not_to be_empty
-            expect(AbsoluteId.first.barcode).to be_an(AbsoluteIds::Barcode)
-            expect(AbsoluteId.first.barcode.value).to eq("32101103191142")
-          end
-        end
->>>>>>> [WIP] Implementing the test suites
       end
     end
   end

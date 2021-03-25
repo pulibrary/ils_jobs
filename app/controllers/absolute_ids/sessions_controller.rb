@@ -11,7 +11,7 @@ class AbsoluteIds::SessionsController < ApplicationController
 
     respond_to do |format|
       format.html { render :index }
-      format.json { render json: sessions }
+      format.json { render json: @sessions }
     end
   end
 
