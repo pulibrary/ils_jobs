@@ -22,7 +22,7 @@ RSpec.describe AbsoluteIds::ContainerProfilesController do
       expect(container_profile["user_mtime"]).to be_present
       # Prefixes are the container profile equivalent in the legacy AbID
       # database. We keep them here for cross-referencing.
-      expect(container_profile["size"]).to eq "P"
+      expect(container_profile["prefix"]).to eq "P"
       expect(container_profile["name"]).to eq "Elephant size box"
     end
 

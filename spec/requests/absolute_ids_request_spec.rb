@@ -301,17 +301,20 @@ RSpec.describe "AbsoluteIds", type: :request do
         batches_json = json_response.first["batches"]
 
         expect(batches_json).not_to be_empty
-        batch_json = batches_json.first
+        batch_json = batches_json.last
 
-        expect(batch_json).to include("id" => 1)
-        expect(batch_json).to include("label" => "Batch 000001")
-        expect(batch_json).to include("table_data")
+        expect(batch_json).to include("id")
+        expect(batch_json).to include("label")
+        expect(batch_json).to include("absolute_ids")
 
-        table_json = batch_json["table_data"]
-        expect(table_json.length).to eq(2)
+        absolute_ids = batch_json["absolute_ids"]
+        expect(absolute_ids.length).to eq(2)
 
-        expect(table_json.first).to include("barcode" => "32101103191142")
-        expect(table_json.last).to include("barcode" => "32101103191159")
+        expect(absolute_ids.first).to include("barcode")
+        expect(absolute_ids.first["barcode"]).to include("value" => "32101103191142")
+
+        expect(absolute_ids.last).to include("barcode")
+        expect(absolute_ids.last["barcode"]).to include("value" => "32101103191159")
       end
     end
   end
