@@ -15,6 +15,7 @@ module LibJobs
         @name = attributes[:name]
         @prefix = attributes[:prefix]
       end
+      # alias :prefix :size
 
       def attributes
         super.merge({

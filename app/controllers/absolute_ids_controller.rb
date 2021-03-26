@@ -72,7 +72,7 @@ class AbsoluteIdsController < ApplicationController
   # This needs to be moved to another controller
   # POST /absolute-ids
   def create_batches
-    authorize! :create_batches, AbsoluteId
+    authorize!(:create_batches, AbsoluteId::Batch)
     @session = ::AbsoluteIdCreateSessionJob.perform_now(session_attributes: session_params, user_id: current_user.id)
 
     respond_to do |format|
@@ -104,26 +104,6 @@ class AbsoluteIdsController < ApplicationController
     Rails.logger.warn("Failed to create batches of new Absolute IDs with invalid parameters.")
     Rails.logger.warn(JSON.generate(session_params))
     raise error
-  end
-
-  # POST /absolute-ids/synchronize
-  # POST /absolute-ids/synchronize.json
-  def synchronize
-    authorize!(:synchronize, AbsoluteId)
-
-    session_id = params[:session_id]
-    @session = AbsoluteId::Session.find_by(user: current_user, id: session_id)
-    @absolute_ids = @session.absolute_ids
-
-    @absolute_ids.each do |absolute_id|
-      ArchivesSpaceSyncJob.perform_now(user_id: current_user.id, model_id: absolute_id.id)
-    end
-
-    respond_to do |format|
-      format.json do
-        head :found, location: absolute_ids_path(format: :json)
-      end
-    end
   end
 
   # PATCH /absolute-ids

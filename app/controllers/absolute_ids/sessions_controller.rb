@@ -76,22 +76,23 @@ class AbsoluteIds::SessionsController < ApplicationController
   end
 
   def show
-    @session ||= begin
-                   AbsoluteId::Session.find_by(user: current_user, id: session_id)
-                 end
+    @session = current_session
 
-    if request.format.text?
-      render text: @session.to_txt
-    else
-      respond_to do |format|
-        format.json { render json: @session }
-        format.yaml { render yaml: @session.to_yaml }
-        format.xml { render xml: @session }
-      end
+    respond_to do |format|
+      format.csv { render csv: @session.to_csv }
+      format.json { render json: @session }
+      format.yaml { render yaml: @session.to_yaml }
+      format.xml { render xml: @session }
     end
   end
 
   private
+
+  def current_session
+    @session ||= begin
+                   AbsoluteId::Session.find_by(user: current_user, id: session_id)
+                 end
+  end
 
   def batches
     @batches ||= begin

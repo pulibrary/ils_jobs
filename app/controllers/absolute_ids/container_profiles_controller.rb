@@ -8,11 +8,11 @@ class AbsoluteIds::ContainerProfilesController < ApplicationController
   def index
     models = current_client.container_profiles
 
-    # Insert the prefixes
+    # Insert the prefix
     # @note Prefixes are the container profile equivalent in the legacy AbID
     # database. We keep them here for cross-referencing.
     @container_profiles = models.map do |model|
-      model.prefix = AbsoluteId.find_size(model)
+      model.prefix = AbsoluteId.find_prefix(model.name)
       model
     end
 

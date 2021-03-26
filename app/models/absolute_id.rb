@@ -51,7 +51,7 @@ class AbsoluteId < ApplicationRecord
     create(**model_attributes)
   end
 
-  def self.sizes
+  def self.prefixes
     {
       'Objects' => 'C',
 
@@ -78,16 +78,16 @@ class AbsoluteId < ApplicationRecord
     }
   end
 
-  def self.find_size(key)
-    return unless sizes.key?(key)
+  def self.find_prefix(key)
+    return unless prefixes.key?(key)
 
-    sizes[key]
+    prefixes[key]
   end
 
-  def self.find_sized_models(size:)
+  def self.find_prefixed_models(prefix:)
     models = all
     models.select do |model|
-      model.size == size
+      model.size == prefix
     end
   end
 
@@ -102,9 +102,9 @@ class AbsoluteId < ApplicationRecord
 
   def size
     if container_profile_object.name
-      self.class.find_size(container_profile_object.name)
-    elsif self.class.sizes.key?(container_profile)
-      self.class.find_size(container_profile)
+      self.class.find_prefix(container_profile_object.name)
+    elsif self.class.prefixes.key?(container_profile)
+      self.class.find_prefix(container_profile)
     else
       container_profile
     end
