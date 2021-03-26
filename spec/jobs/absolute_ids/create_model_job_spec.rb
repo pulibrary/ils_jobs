@@ -66,12 +66,9 @@ RSpec.describe AbsoluteIds::CreateModelJob, type: :job do
       let(:repository_id) { '4' }
       let(:ead_id) { 'ABID001' }
       let(:resource_id) { '4188' }
-      let(:source_client) do
-        stub_aspace_resource(repository_id: repository_id, resource_id: resource_id, ead_id: ead_id)
-      end
 
       before do
-        allow(LibJobs::ArchivesSpace::Client).to receive(:source).and_return(source_client)
+        stub_aspace_resource(repository_id: repository_id, resource_id: resource_id, ead_id: ead_id)
 
         described_class.polymorphic_perform_now(properties: properties, user_id: user.id)
       end

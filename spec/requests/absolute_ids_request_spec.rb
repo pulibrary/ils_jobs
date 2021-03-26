@@ -129,8 +129,6 @@ RSpec.describe "AbsoluteIds", type: :request do
         expect(xml_document.root.name).to eq("absolute_id")
         children = xml_document.root.elements
         expect(children.length).to eq(10)
-        # expect(children.length).to eq(6)
-        # expect(children.length).to eq(11)
 
         expect(children[0].name).to eq("barcode")
         expect(children[0]['type']).to be nil
