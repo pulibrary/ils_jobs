@@ -73,10 +73,6 @@ RSpec.describe "AbsoluteIds", type: :request do
       AbsoluteId.generate(**model_attributes)
     end
 
-    after do
-      # AbsoluteId.all.each(&:destroy)
-    end
-
     xit "renders an existing absolute identifier" do
       get "/absolute-ids/#{absolute_id.value}"
       # Pending
@@ -132,51 +128,51 @@ RSpec.describe "AbsoluteIds", type: :request do
         xml_document = Nokogiri::XML(response.body)
         expect(xml_document.root.name).to eq("absolute_id")
         children = xml_document.root.elements
-        expect(children.length).to eq(11)
+        expect(children.length).to eq(10)
 
         expect(children[0].name).to eq("barcode")
         expect(children[0]['type']).to be nil
         expect(children[0].content).not_to be_empty
 
-        expect(children[1].name).to eq("container")
+        expect(children[1].name).to eq("container_profile")
         expect(children[1]['type']).to be nil
         expect(children[1].content).not_to be_empty
 
-        expect(children[2].name).to eq("container_profile")
-        expect(children[2]['type']).to be nil
+        # expect(children[2].name).to eq("container_profile")
+        # expect(children[2]['type']).to be nil
+        # expect(children[2].content).not_to be_empty
+
+        expect(children[2].name).to eq("created_at")
+        expect(children[2]['type']).to eq("time")
         expect(children[2].content).not_to be_empty
 
-        expect(children[3].name).to eq("created_at")
-        expect(children[3]['type']).to eq("time")
-        expect(children[3].content).not_to be_empty
+        expect(children[3].name).to eq("id")
+        expect(children[3]['type']).to eq "integer"
+        expect(children[3].content).to eq("0")
 
-        expect(children[4].name).to eq("id")
-        expect(children[4]['type']).to eq "integer"
-        expect(children[4].content).to eq("0")
+        expect(children[4].name).to eq("location")
+        expect(children[4]['type']).to be nil
+        expect(children[4].content).not_to be_empty
 
-        expect(children[5].name).to eq("location")
-        expect(children[5]['type']).to be nil
-        expect(children[5].content).not_to be_empty
+        expect(children[5].name).to eq("size")
+        expect(children[5]['type']).to eq "string"
+        expect(children[5].content).to eq("P")
 
-        expect(children[6].name).to eq("size")
-        expect(children[6]['type']).to eq "string"
-        expect(children[6].content).to eq("P")
+        expect(children[6].name).to eq("repository")
+        expect(children[6]['type']).to be nil
+        expect(children[6].content).not_to be_empty
 
-        expect(children[7].name).to eq("repository")
+        expect(children[7].name).to eq("resource")
         expect(children[7]['type']).to be nil
         expect(children[7].content).not_to be_empty
 
-        expect(children[8].name).to eq("resource")
-        expect(children[8]['type']).to be nil
-        expect(children[8].content).not_to be_empty
+        expect(children[8].name).to eq("synchronize_status")
+        expect(children[8]['type']).to eq "string"
+        expect(children[8].content).to eq("never synchronized")
 
-        expect(children[9].name).to eq("synchronize_status")
-        expect(children[9]['type']).to eq "string"
-        expect(children[9].content).to eq("never synchronized")
-
-        expect(children[10].name).to eq("updated_at")
-        expect(children[10]['type']).to eq("time")
-        expect(children[10].content).not_to be_empty
+        expect(children[9].name).to eq("updated_at")
+        expect(children[9]['type']).to eq("time")
+        expect(children[9].content).not_to be_empty
       end
     end
   end

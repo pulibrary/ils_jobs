@@ -20,6 +20,7 @@ module AbsoluteIds
       container_resource.to_json
     end
 
+    # @todo Should this be removed?
     def build_location(properties)
       properties.to_json
     end
