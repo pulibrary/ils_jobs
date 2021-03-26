@@ -101,7 +101,7 @@ class AbsoluteId < ApplicationRecord
     sizes[key]
   end
 
-  def self.find_sizeed_models(size:)
+  def self.find_sized_models(size:)
     models = all
     models.select do |model|
       model.size == size
@@ -123,7 +123,7 @@ class AbsoluteId < ApplicationRecord
     elsif self.class.sizes.key?(container_profile)
       self.class.find_size(container_profile)
     else
-      self.class.sizes.invert[container_profile]
+      container_profile
     end
   end
 

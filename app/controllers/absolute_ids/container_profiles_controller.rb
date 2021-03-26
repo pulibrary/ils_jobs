@@ -12,7 +12,7 @@ class AbsoluteIds::ContainerProfilesController < ApplicationController
     # @note Prefixes are the container profile equivalent in the legacy AbID
     # database. We keep them here for cross-referencing.
     @container_profiles = models.map do |model|
-      model.prefix = AbsoluteId.find_prefix(model.name)
+      model.prefix = AbsoluteId.find_size(model)
       model
     end
 
