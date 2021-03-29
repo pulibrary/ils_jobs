@@ -1,10 +1,42 @@
 # frozen_string_literal: true
 module ASpaceClientStubbing
   def stub_aspace_source_client(client: nil)
-    source_client = client || stub_aspace_client
+    login_fixture_file_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'login.json')
+    login_fixture = File.read(login_fixture_file_path)
 
-    allow(LibJobs::ArchivesSpace::Client).to receive(:source).and_return(source_client)
-    source_client
+    client ||= LibJobs::ArchivesSpace::Client.source
+    allow(client).to receive(:login).and_return(login_fixture)
+    client
+  end
+  alias stub_aspace_client stub_aspace_source_client
+
+  def stub_aspace_sync_client(client: nil)
+    login_fixture_file_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'login.json')
+    login_fixture = File.read(login_fixture_file_path)
+
+    client ||= LibJobs::ArchivesSpace::Client.sync
+    allow(client).to receive(:login).and_return(login_fixture)
+    client
+  end
+
+  def stub_aspace_location(location_id:, client: nil)
+    client ||= stub_aspace_client
+
+    location_fixture_file_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'location.json')
+    location_fixture = File.read(location_fixture_file_path)
+
+    location_response_status = double
+    location_response = double
+    allow(
+      location_response_status
+    ).to receive(:code).and_return("200")
+    allow(
+      location_response
+    ).to receive(:status).and_return(location_response_status)
+    allow(location_response).to receive(:body).and_return(location_fixture)
+
+    allow(client).to receive(:get).with("/locations/#{location_id}").and_return(location_response)
+    client
   end
 
   def stub_aspace_top_container(repository_id:, top_container_id:, client: nil)
@@ -169,15 +201,6 @@ module ASpaceClientStubbing
     allow(client).to receive(:get).with("/repositories/#{repository_id}").and_return(repository_response)
 
     stub_aspace_source_client(client: client)
-  end
-
-  def stub_aspace_client
-    login_fixture_file_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'login.json')
-    login_fixture = File.read(login_fixture_file_path)
-
-    client = LibJobs::ArchivesSpace::Client.source
-    allow(client).to receive(:login).and_return(login_fixture)
-    client
   end
 end
 
