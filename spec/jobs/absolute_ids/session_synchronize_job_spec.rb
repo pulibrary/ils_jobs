@@ -153,7 +153,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
 
     before do
       stub_request(:post, "https://aspace.test.org/staff/api/repositories/4/top_containers/118091")
-      allow(sync_client).to receive(:post).with("#{sync_client.base_uri}/repositories/4/top_containers/118091", any_args)
+      allow(sync_client).to receive(:post).with("/repositories/4/top_containers/118091", any_args)
       allow(LibJobs::ArchivesSpace::Client).to receive(:sync).and_return(sync_client)
       allow(LibJobs::ArchivesSpace::Client).to receive(:source).and_return(source_client)
 
