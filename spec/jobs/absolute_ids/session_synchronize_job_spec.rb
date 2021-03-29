@@ -4,6 +4,10 @@ require 'rails_helper'
 RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
   describe '#perform' do
     let(:user) { create(:user) }
+<<<<<<< HEAD
+=======
+
+>>>>>>> [WIP] Implementing the test suite
     let(:barcode) { '32101103191142' }
     let(:container_profile) do
       {
@@ -79,6 +83,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
       }
     end
     let(:absolute_id) { create(:absolute_id, model_attributes) }
+<<<<<<< HEAD
     let(:barcode_unique) { true }
     let(:indicator_unique) { true }
     let(:sync_client) do
@@ -86,6 +91,11 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
       stubbed_client = stub_aspace_location(location_id: 23_640, client: stubbed_client)
       stubbed_client = stub_aspace_search_top_containers(repository_id: 4, barcode: absolute_id.barcode.value, empty: barcode_unique, client: stubbed_client)
       stubbed_client = stub_aspace_search_top_containers(repository_id: 4, indicator: absolute_id.label, empty: indicator_unique, client: stubbed_client)
+=======
+    let(:sync_client) do
+      stubbed_client = stub_aspace_sync_client
+      stubbed_client = stub_aspace_location(location_id: 23_640, client: stubbed_client)
+>>>>>>> [WIP] Implementing the test suite
       stubbed_client = stub_aspace_top_container(repository_id: 4, top_container_id: 118_091, client: stubbed_client)
       stubbed_client = stub_aspace_repository(repository_id: 4, client: stubbed_client)
       stubbed_client = stub_aspace_resource(repository_id: 4, resource_id: 4188, client: stubbed_client)
@@ -121,6 +131,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
         exported_to_ils: nil
       }
     end
+<<<<<<< HEAD
     let(:top_containers_search_fixture_path) do
       Rails.root.join('spec', 'fixtures', 'archives_space', 'repositories_top_containers_search.json')
     end
@@ -138,6 +149,19 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
     it 'updates the ArchivesSpace TopContainer indicator and barcode fields with that of the AbId' do
       described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
 
+=======
+
+    before do
+      stub_request(:post, "https://aspace.test.org/staff/api/repositories/4/top_containers/118091")
+      allow(sync_client).to receive(:post).with("#{sync_client.base_uri}/repositories/4/top_containers/118091", any_args)
+      allow(LibJobs::ArchivesSpace::Client).to receive(:sync).and_return(sync_client)
+      allow(LibJobs::ArchivesSpace::Client).to receive(:source).and_return(source_client)
+
+      described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
+    end
+
+    it 'updates the ArchivesSpace TopContainer indicator and barcode fields with that of the AbId' do
+>>>>>>> [WIP] Implementing the test suite
       expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/118091").with(
         body: post_params,
         headers: {
@@ -145,6 +169,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
         }
       )).to have_been_made
     end
+<<<<<<< HEAD
 
     context 'when a TopContainer has already using an existing barcode' do
       let(:logger) { instance_double(ActiveSupport::Logger) }
@@ -191,5 +216,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
         expect(logger).to have_received(:warn).with("Warning: Failed to synchronize #{absolute_id.label}: Absolute ID #{absolute_id.label} is already used in ArchivesSpace.")
       end
     end
+=======
+>>>>>>> [WIP] Implementing the test suite
   end
 end
