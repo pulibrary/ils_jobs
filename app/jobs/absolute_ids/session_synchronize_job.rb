@@ -72,6 +72,12 @@ module AbsoluteIds
       raise(DuplicateIndicatorError, "Failed to synchronize #{@model_id} ArchivesSpace: the Absolute ID #{absolute_id.label} is not unique") unless top_resources.empty?
     end
 
+    def update_container_profile(uri: container.id, container_profile_uri: container_profile.uri)
+    end
+
+    def update_location(uri: container.id, location_uri: location.uri)
+    end
+
     # Update the TopContainer
     # @param uri
     # @param barcode
@@ -100,7 +106,15 @@ module AbsoluteIds
 
       sync_container = sync_repository.find_top_container_by(uri: source_container.uri)
       updated = sync_container.update(barcode: barcode.value, indicator: indicator, container_locations: updated_locations)
-      raise(SynchronizeError, "Failed to update the container: #{sync_container.uri}") if updated.nil?
+      raise(SynchronizeError, "Failed to update the TopContainer: #{sync_container.uri}") if updated.nil?
+
+      # Update the container profile
+      updated_with_profile = sync_repository.batch_update_top_containers(containers: [sync_container], container_profile_uri: container_profile.uri)
+      raise(SynchronizeError, "Failed to update the ContainerProfile for the TopContainer: #{sync_container.uri}") if updated_with_profile.nil?
+
+      # Update the location
+      updated_with_location = sync_repository.batch_update_top_containers(containers: [sync_container], location_uri: location.uri)
+      raise(SynchronizeError, "Failed to update the Location for the TopContainer: #{sync_container.uri}") if updated_with_location.nil?
     end
 
     def perform(user_id:, model_id:)
@@ -116,6 +130,7 @@ module AbsoluteIds
         absolute_id.save!
 
         update_top_container(uri: container.uri, barcode: absolute_id.barcode, indicator: absolute_id.label, location: location)
+
         absolute_id.synchronized_at = DateTime.current
         absolute_id.synchronize_status = AbsoluteId::SYNCHRONIZED
         absolute_id.save!
