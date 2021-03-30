@@ -78,8 +78,12 @@ module LibJobs
       # Search for TopContainers using the EAD ID
       # @param ead_id
       # @param indicator
-      def search_top_containers_by(barcode:, resource_class: TopContainer)
-        query_params = [["q", barcode]]
+      def search_top_containers_by(barcode: nil, indicator: nil, resource_class: TopContainer)
+        query_params = if !indicator.nil?
+                         [["q", indicator]]
+                       else
+                         [["q", barcode]]
+                       end
         query = URI.encode_www_form(query_params)
         response = client.get("/repositories/#{@id}/#{resource_class.name.demodulize.pluralize.underscore}/search?#{query}")
 
