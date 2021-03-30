@@ -147,7 +147,7 @@ module LibJobs
       def find_child(uri:, resource_class:, model_class:, id: nil)
         return find_child_by(child_id: id, resource_class: resource_class, model_class: model_class) unless id.nil?
 
-        cached = model_class.find_cached(uri)
+        cached = model_class.find_cached(uri, self)
         return cached unless cached.nil?
 
         response = get(uri)
