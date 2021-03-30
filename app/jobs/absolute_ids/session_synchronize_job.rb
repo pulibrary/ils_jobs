@@ -2,7 +2,8 @@
 module AbsoluteIds
   class SessionSynchronizeJob < BaseJob
     queue_as :default
-    class ArchivesSpaceSyncError < StandardError; end
+    class SynchronizeError < StandardError; end
+    class DuplicateBarcodeError < SynchronizeError; end
 
     class ClientMapper
       def self.root_config_file_path
@@ -48,24 +49,45 @@ module AbsoluteIds
       @client_mapper ||= ClientMapper.new
     end
 
+    # Ensure that the indicator is unique
+    # @param barcode
+    # @param indicator
+    # @param repository
+    # @return [Array<TopContainer>]
+    def validate_update(barcode:, repository:)
+      top_resources = repository.search_top_containers_by(barcode: barcode.value)
+
+      raise(DuplicateBarcodeError, "Failed to synchronize #{@model_id} ArchivesSpace: the barcode #{barcode} is not unique") unless top_resources.empty?
+    end
+
+    # Update the TopContainer
+    # @param uri
+    # @param barcode
+    # @param indicator
+    # @param location
     def update_top_container(uri:, barcode:, indicator:, location:)
       source_client = client_mapper.source_client
       source_repository = source_client.find_repository_by(uri: repository.uri)
       source_container = source_repository.find_top_container_by(uri: uri)
-      raise(ArchivesSpaceSyncError, "Failed to locate the container resource for #{uri}") if source_container.nil?
+      raise(SynchronizeError, "Failed to locate the container resource for #{uri}") if source_container.nil?
 
       current_locations = container.container_locations
       source_location = source_client.find_location_by(uri: location.uri)
-      raise(ArchivesSpaceSyncError, "Failed to locate the location resource for #{location.uri}") if source_location.nil?
+      raise(SynchronizeError, "Failed to locate the location resource for #{location.uri}") if source_location.nil?
+
       updated_locations = current_locations.map { |location_attrs| LibJobs::ArchivesSpace::Location.new(location_attrs) }.reject do |location_model|
         location_model.uri.to_s == source_location.uri.to_s
       end
 
       sync_client = client_mapper.sync_client
       sync_repository = sync_client.find_repository_by(uri: source_repository.uri)
+
+      # Verify that the AbID and barcode are unique for the TopContainer
+      validate_update(barcode: barcode, repository: sync_repository)
+
       sync_container = sync_repository.find_top_container_by(uri: source_container.uri)
       updated = sync_container.update(barcode: barcode.value, indicator: indicator, container_locations: updated_locations)
-      raise(ArchivesSpaceSyncError, "Failed to update the container: #{sync_container.uri}") if updated.nil?
+      raise(SynchronizeError, "Failed to update the container: #{sync_container.uri}") if updated.nil?
     end
 
     def perform(user_id:, model_id:)
@@ -84,7 +106,10 @@ module AbsoluteIds
         absolute_id.synchronized_at = DateTime.current
         absolute_id.synchronize_status = AbsoluteId::SYNCHRONIZED
         absolute_id.save!
+      rescue DuplicateBarcodeError
+        Rails.logger.warn("Warning: Failed to synchronize #{absolute_id.label}: Barcode #{absolute_id.barcode.value} is already used in ArchivesSpace.")
 
+        absolute_id.synchronize_status = AbsoluteId::SYNCHRONIZE_FAILED
         absolute_id.save!
       rescue StandardError => error
         Rails.logger.warn("Warning: Failed to synchronize #{absolute_id.label}: #{error}")
