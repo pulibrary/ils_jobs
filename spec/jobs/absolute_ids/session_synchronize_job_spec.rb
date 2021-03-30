@@ -94,7 +94,6 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
     let(:source_client) do
       stubbed_client = stub_aspace_source_client
       stubbed_client = stub_aspace_location(location_id: 23_640, client: stubbed_client)
-      stubbed_client = stub_aspace_search_top_containers(repository_id: 4, barcode: 32_101_103_191_142, empty: barcode_unique, client: stubbed_client)
       stubbed_client = stub_aspace_top_container(repository_id: 4, top_container_id: 118_091, client: stubbed_client)
       stubbed_client = stub_aspace_repository(repository_id: 4, client: stubbed_client)
       stubbed_client = stub_aspace_resource(repository_id: 4, resource_id: 4188, client: stubbed_client)

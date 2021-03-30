@@ -14,12 +14,12 @@ class AbsoluteId::Record < ApplicationRecord
     model.to_resource(client: client)
   end
 
-  def self.find_cached(uri)
+  def self.find_cached(uri, client = nil)
     model = find_by(uri: uri)
     return if model.nil?
 
     @cached = true
-    model.to_resource
+    model.to_resource(client: client)
   end
 
   def self.uncache(resource)
