@@ -42,6 +42,8 @@ module ASpaceClientStubbing
   def stub_aspace_top_container(repository_id:, top_container_id:, client: nil)
     client ||= stub_aspace_repository(repository_id: repository_id)
 
+    # Implementing support for TopContainer querying
+    # For searching the TopContainers by barcode
     resource_fixture_file_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'top_container.json')
     resource_fixture = File.read(resource_fixture_file_path)
 
@@ -58,6 +60,34 @@ module ASpaceClientStubbing
     allow(client).to receive(:get).with("/repositories/#{repository_id}/top_containers/#{top_container_id}").and_return(resource_response)
 
     stub_aspace_source_client(client: client)
+  end
+
+  def stub_aspace_search_top_containers(repository_id:, barcode:, empty: false, client: nil)
+    client ||= stub_aspace_repository(repository_id: repository_id)
+
+    # Implementing support for TopContainer querying
+    # For searching the TopContainers by barcode
+    top_containers_search_fixture = if empty
+                                      top_containers_search_response = {
+                                        'response' => {
+                                          'docs' => []
+                                        }
+                                      }
+                                      top_containers_search_response.to_json
+                                    else
+                                      top_containers_search_fixture_path = Rails.root.join('spec', 'fixtures', 'archives_space', 'repositories_top_containers_search.json')
+                                      File.read(top_containers_search_fixture_path)
+                                    end
+
+    top_container_response_status = double
+    top_container_response = double
+    allow(top_container_response_status).to receive(:code).and_return("200")
+    allow(top_container_response).to receive(:status).and_return(top_container_response_status)
+    allow(top_container_response).to receive(:body).and_return(top_containers_search_fixture)
+
+    allow(client).to receive(:get).with("/repositories/#{repository_id}/top_containers/search?q=#{barcode}").and_return(top_container_response)
+
+    client
   end
 
   def stub_aspace_archival_object(repository_id:, archival_object_id:, client: nil)
