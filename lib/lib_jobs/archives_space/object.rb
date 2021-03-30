@@ -99,7 +99,10 @@ module LibJobs
       end
 
       def find_or_create_model
-        find_model || to_model.save!
+        find_model || begin
+                        persisted = to_model.save!
+                        persisted
+                      end
       end
 
       private

@@ -7,23 +7,5 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 #
 
-source_client = LibJobs::ArchivesSpace::Client.source
-Rails.logger.info("Authenticating...")
-source_client.login
-Rails.logger.info("Authenticated")
-
-Rails.logger.info("Caching repositories...")
-source_client.repositories.each do |repository|
-  Rails.logger.info("Cached repository #{repository.uri}...")
-
-  repository.top_containers.each do |top_container|
-    Rails.logger.info("Cached container #{top_container.uri}...")
-  end
-
-  repository.resources.each do |resources|
-    Rails.logger.info("Cached resource #{resource.uri}...")
-  end
-end
-
-source_client.container_profiles
-source_client.locations
+Rails.logger.info("Caching the ArchivesSpace REST API objects")
+ArchivesSpaceCacheJob.perform_now
