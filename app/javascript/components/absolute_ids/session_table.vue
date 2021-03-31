@@ -39,7 +39,7 @@
       :synchronize="synchronize"
       :caption="batch.label"
       :columns="columns"
-      :json-data="batch.to_table"
+      :json-data="batch"
     />
   </div>
 </template>

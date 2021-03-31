@@ -5,27 +5,6 @@ class AbsoluteId::Batch < ApplicationRecord
       @model = model
     end
 
-    def rows_deprecated
-      @rows ||= begin
-                  entries = @model.absolute_ids.map do |absolute_id|
-                    {
-                      label: absolute_id.label,
-                      user: user.email,
-                      barcode: absolute_id.barcode.value,
-                      location: absolute_id.location_object,
-                      container_profile: absolute_id.container_profile_object,
-                      repository: absolute_id.repository_object,
-                      resource: absolute_id.resource_object,
-                      container: absolute_id.container_object,
-                      status: AbsoluteId::UNSYNCHRONIZED,
-                      synchronized_at: absolute_id.synchronized_at
-                    }
-                  end
-
-                  entries.map { |entry| OpenStruct.new(entry) }
-                end
-    end
-
     def rows
       @rows ||= begin
                   @model.absolute_ids.map do |absolute_id|
@@ -53,15 +32,29 @@ class AbsoluteId::Batch < ApplicationRecord
   end
 
   class TablePresenter
+    def self.columns
+      [
+        { name: 'label', display_name: 'Identifier', align: 'left', sortable: true },
+        { name: 'barcode', display_name: 'Barcode', align: 'left', sortable: true, ascending: 'undefined' },
+        { name: 'location', display_name: 'Location', align: 'left', sortable: false },
+        { name: 'container_profile', display_name: 'Container Profile', align: 'left', sortable: false },
+        { name: 'repository', display_name: 'Repository', align: 'left', sortable: false },
+        { name: 'resource', display_name: 'ASpace Resource', align: 'left', sortable: false },
+        { name: 'container', display_name: 'ASpace Container', align: 'left', sortable: false },
+        { name: 'user', display_name: 'User', align: 'left', sortable: false },
+        { name: 'status', display_name: 'Synchronization', align: 'left', sortable: false, datatype: 'constant' }
+      ]
+    end
+
     def initialize(model)
       @model = model
     end
 
-    def attributes
+    def rows
       @model.absolute_ids.order(:id).map do |absolute_id|
         {
           label: absolute_id.label,
-          user: user.email,
+          user: @model.user.email,
           barcode: absolute_id.barcode.value,
           location: { link: absolute_id.location_object.uri, value: absolute_id.location_object.building },
           container_profile: { link: absolute_id.container_profile_object.uri, value: absolute_id.container_profile_object.name },
@@ -73,6 +66,9 @@ class AbsoluteId::Batch < ApplicationRecord
         }
       end
     end
+    alias attributes rows
+
+    delegate :to_json, to: :attributes
   end
 
   has_many :absolute_ids, foreign_key: "absolute_id_batch_id"
@@ -120,8 +116,8 @@ class AbsoluteId::Batch < ApplicationRecord
   end
   delegate :to_csv, to: :csv_table
 
-  def to_table
-    @table ||= table_presenter.attributes
+  def data_table
+    @data_table ||= table_presenter
   end
 
   def attributes
