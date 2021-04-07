@@ -145,6 +145,7 @@ class AbsoluteId < ApplicationRecord
       container_profile
     end
   end
+  # @todo Deprecate #prefix in favor of #size
   alias prefix size
 
   def locator
@@ -152,6 +153,7 @@ class AbsoluteId < ApplicationRecord
 
     format("%s-%06d", size, index)
   end
+  # @todo Deprecate #label in favor of #locator
   alias label locator
 
   # For ASpace Locations
@@ -245,6 +247,8 @@ class AbsoluteId < ApplicationRecord
   private
 
   def json_attribute(value)
+    return {} if value.nil?
+
     output = JSON.parse(value, symbolize_names: true)
     return {} unless output.is_a?(Hash)
 

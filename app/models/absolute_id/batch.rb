@@ -119,9 +119,9 @@ class AbsoluteId::Batch < ApplicationRecord
     end
   end
 
-  # Refactor this
+  # @todo Determine whether or not the entries have been deprecated
   def report_entries
-    entries = absolute_ids.map do |absolute_id|
+    @report_entries ||= absolute_ids.map do |absolute_id|
       {
         label: absolute_id.label,
         user: user.email,

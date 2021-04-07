@@ -1,21 +1,15 @@
 # frozen_string_literal: true
 class AbsoluteId::Record < ApplicationRecord
   self.abstract_class = true
-  @cached = false
 
   def self.table_name_prefix
     'absolute_id_'
-  end
-
-  def self.cached?
-    @cached
   end
 
   def self.find_cached(uri, client = nil)
     model = find_by(uri: uri)
     return if model.nil?
 
-    @cached = true
     model.to_resource(client: client)
   end
 
@@ -23,7 +17,6 @@ class AbsoluteId::Record < ApplicationRecord
     models = where(uri: resource.uri.to_s)
     models.each(&:destroy)
 
-    @cached = false unless models.empty?
     resource
   end
 
