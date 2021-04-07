@@ -32,17 +32,6 @@ class AbsoluteId < ApplicationRecord
     end
   end
 
-  class LocatorValidator < ActiveModel::Validator
-    def validate(absolute_id)
-      return if absolute_id.index.nil?
-
-      persisted = AbsoluteId.find_by(index: absolute_id.index, container_profile: absolute_id.container_profile, location: absolute_id.location)
-      return if persisted.nil? || persisted.id == absolute_id.id
-
-      absolute_id.errors.add(:index, "Duplicate index #{absolute_id.index} for the AbID within the Location #{absolute_id.location} and ContainerProfile #{absolute_id.container_profile}")
-    end
-  end
-
   validates :value, presence: true
   ## Disabled until the factories are fixed
   # validates :check_digit, presence: true
