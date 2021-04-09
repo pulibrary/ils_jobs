@@ -95,6 +95,11 @@ class AbsoluteId::Batch < ApplicationRecord
     format("Batch %06d", id)
   end
 
+  def barcode_only?
+    children = absolute_ids.map(&:barcode_only?)
+    children.reduce(&:|)
+  end
+
   def synchronized?
     absolute_ids.map(&:synchronized?).reduce(&:&)
   end

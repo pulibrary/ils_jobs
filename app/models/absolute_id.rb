@@ -145,6 +145,10 @@ class AbsoluteId < ApplicationRecord
   # @todo Deprecate #label in favor of #locator
   alias label locator
 
+  def barcode_only?
+    barcode.present? && label.blank?
+  end
+
   # For ASpace Locations
   def location_object
     OpenStruct.new(location_json)
