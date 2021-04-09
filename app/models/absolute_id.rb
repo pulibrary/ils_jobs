@@ -80,11 +80,13 @@ class AbsoluteId < ApplicationRecord
     sizes.select { |k, v| k != "global" && v.is_a?(Hash) }
   end
 
-  def self.find_prefix(key)
+  def self.prefixes
     local_merged = local_prefixes.to_h.values.inject(:merge)
-    merged = global_prefixes.merge(local_merged)
+    global_prefixes.merge(local_merged)
+  end
 
-    merged[key]
+  def self.find_prefix(key)
+    prefixes[key]
   end
 
   def self.find_prefixed_models(prefix:)

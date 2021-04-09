@@ -7,6 +7,10 @@ module LibJobs
         AbsoluteId::Repository
       end
 
+      def self.model_class_exists?
+        true
+      end
+
       # Construct a TopContainer object from a SolrDocument
       # @param document
       # @return TopContainer

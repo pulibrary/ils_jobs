@@ -144,8 +144,11 @@ module LibJobs
       def find_child(uri:, resource_class:, model_class:, id: nil)
         return find_child_by(child_id: id, resource_class: resource_class, model_class: model_class) unless id.nil?
 
-        cached = model_class.find_cached(uri, self)
-        return cached unless cached.nil?
+        model_class ||= resource_class.model_class unless resource_class.nil? || !resource_class.model_class_exists?
+        unless model_class.nil?
+          cached = model_class.find_cached(uri, self)
+          return cached unless cached.nil?
+        end
 
         response = get(uri)
         raise(StandardError, "Error requesting the #{resource_class.name.demodulize} #{uri}: #{response.body}") if response.status.code != "200"
