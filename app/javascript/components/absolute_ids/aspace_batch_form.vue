@@ -819,7 +819,6 @@ export default {
           this.selectedContainerProfileId = this.value.absolute_id.container_profile.id;
         }
 
-        console.log(this.value);
         if (this.value.absolute_id.repository) {
           this.selectedRepositoryId = this.value.absolute_id.repository.id;
         }

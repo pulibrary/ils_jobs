@@ -31,14 +31,6 @@
             </div>
           </div>
 
-          <button
-            data-v-b7851b04
-            class="lux-button solid"
-            @click.prevent="clearBarcode()"
-          >
-            Reset
-          </button>
-
           <input-text
             v-if="size > 1"
             id="terminal_code"
@@ -103,9 +95,7 @@
                 label="Repository"
                 :hide-label="true"
                 helper="Repository"
-
-                :placeholder="repositoryPlaceholder"
-                :disabled="fetchingRepositories"
+                placeholder="Enter a repository"
                 v-model="selectedRepositoryId"
                 display-property="repoCode"
                 v-on:input="changeRepositoryId($event)"
@@ -291,15 +281,6 @@ export default {
     }
   },
 
-  updated: async function() {
-    this.updateValue();
-
-    const base = this.parsedBarcode.slice(0, -1);
-    this.updateEndingBarcode(base);
-
-    this.valid = await this.formValid;
-  },
-
   methods: {
     /**
      * Form validation
@@ -341,6 +322,33 @@ export default {
         batch_size: this.batchSize,
         valid
       };
+    },
+
+    /**
+     * This is needed for the data list
+     */
+    updateAbsoluteId: async function() {
+      if (this.value.absolute_id) {
+        if (this.value.absolute_id.location) {
+          this.selectedLocationId = this.value.absolute_id.location;
+        }
+
+        if (this.value.absolute_id.container_profile) {
+          this.selectedContainerProfileId = this.value.absolute_id.container_profile;
+        }
+
+        if (this.value.absolute_id.repository) {
+          this.selectedRepositoryId = this.value.absolute_id.repository;
+        }
+
+        if (this.value.absolute_id.resource) {
+          this.selectedResourceId = this.value.absolute_id.resource;
+        }
+
+        if (this.value.absolute_id.container) {
+          this.selectedContainerId = this.value.absolute_id.container;
+        }
+      }
     }
   }
 };
