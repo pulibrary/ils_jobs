@@ -61,7 +61,7 @@ module AbsoluteIds
 
       (return if top_resource_ids.include?(container_id) || top_resources.empty?)
 
-      raise(DuplicateBarcodeError, "Failed to synchronize #{absolute_id.label} ArchivesSpace: the barcode #{barcode.value} is not unique")
+      raise(DuplicateBarcodeError, "The barcode #{barcode.value} is not unique")
     end
 
     # Ensure that the indicator is unique
@@ -75,7 +75,7 @@ module AbsoluteIds
 
       (return if top_resource_ids.include?(container_id) || top_resources.empty?)
 
-      raise(DuplicateIndicatorError, "Failed to synchronize #{absolute_id.label} ArchivesSpace: the Absolute ID #{absolute_id.label} is not unique")
+      raise(DuplicateIndicatorError, "The Absolute ID #{absolute_id.label} is not unique")
     end
 
     def update_container_profile(uri: container.id, container_profile_uri: container_profile.uri)
