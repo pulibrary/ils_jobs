@@ -6,6 +6,7 @@ RSpec.describe AbsoluteIds::Repositories::ContainersController do
   describe '#index' do
     it 'returns all available locations in a specific repository as JSON' do
       stub_aspace_login
+      stub_location(location_id: 23649)
       stub_repository
       stub_repository_top_containers(repository_id: "4")
 
@@ -72,6 +73,7 @@ RSpec.describe AbsoluteIds::Repositories::ContainersController do
     context 'when authorizing via a bearer token' do
       it 'skips forgery' do
         stub_aspace_login
+        stub_location(location_id: 23649)
         stub_repository
         stub_repository_top_containers(repository_id: "4")
         allow(controller).to receive(:verify_authenticity_token)
