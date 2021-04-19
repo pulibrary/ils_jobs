@@ -35,6 +35,7 @@ RSpec.describe 'Barcode Management' do
 
       # Fill in barcode with a valid untaken barcode
       fill_in 'Barcode', with: '3210110319105'
+      # page.save_screenshot('')
       expect(page).to have_content "Barcode is valid"
     end
 
