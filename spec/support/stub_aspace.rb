@@ -136,20 +136,26 @@ module AspaceStubbing
       )
   end
 
+  def stub_search_repository_children(repository_id:, type: 'top_container')
+    response_body = File.open(Rails.root.join('spec', 'fixtures', 'archives_space', 'repositories', "search_top_containers.json"))
+
+    stub_request(:get, "https://aspace.test.org/staff/api/repositories/#{repository_id}/search?type%5B%5D=#{type}&page=1")
+      .to_return(
+        status: 200,
+        body: response_body,
+        headers: { "Content-Type": 'application/json' }
+      )
+  end
+
   def stub_top_containers(ead_id:, repository_id:)
     response_body = File.open(Rails.root.join('spec', 'fixtures', 'archives_space', 'repositories', "search_top_containers.json"))
 
     stub_request(:get, "https://aspace.test.org/staff/api/repositories/#{repository_id}/search?page=1&q=collection_identifier_u_stext:#{ead_id}&type%5B%5D=top_container")
-      .with(
-      headers: {
-        'X-Archivesspace-Session' => '1'
-      }
-    )
       .to_return(
-      status: 200,
-      body: response_body,
-      headers: { "Content-Type": 'application/json' }
-    )
+        status: 200,
+        body: response_body,
+        headers: { "Content-Type": 'application/json' }
+      )
   end
 
   def stub_resources(repository_id:)
