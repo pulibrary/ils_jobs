@@ -77,7 +77,7 @@ module AspaceStubbing
       )
   end
 
-  def stub_repository(repository_id: 4)
+  def stub_repository(repository_id:)
     uri = "/repositories/#{repository_id}"
     path = Rails.root.join('spec', 'fixtures', 'archives_space', 'repositories', repository_id.to_s, 'repository.json')
     cache_path(uri: uri, path: path)
