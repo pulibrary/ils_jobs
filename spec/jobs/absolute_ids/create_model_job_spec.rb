@@ -270,7 +270,7 @@ RSpec.describe AbsoluteIds::CreateModelJob, type: :job do
             repository: "",
             resource: "10915154"
           },
-          user_id: 1
+          user_id: user.id
         }
       )
     end
