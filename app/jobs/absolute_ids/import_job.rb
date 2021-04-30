@@ -2,6 +2,14 @@
 
 module AbsoluteIds
   class ImportJob < ApplicationJob
+    def resolve_top_container(aspace_resource:, indicator:)
+      top_containers = aspace_resource.top_containers.select { |c| c.indicator == indicator || c.indicator =~ /(?:[bB]ox)\s#{indicator}/ }
+      top_container = top_containers.first
+
+      raise(ArgumentError, "Failed to resolve the container for indicator #{indicator} linked to the resource #{aspace_resource.id}") if top_container.nil?
+      top_container
+    end
+
     def perform(sequence_entry)
       prefix = sequence_entry[:prefix]
       index = sequence_entry[:index]
@@ -85,8 +93,7 @@ module AbsoluteIds
         imported_attributes[:resource] = ead_resource.to_json
 
         # Container
-        top_containers = repository.select_top_containers_by(barcode: barcode)
-        top_container = top_containers.first
+        top_container = resolve_top_container(aspace_resource: resource, indicator: container_indicator)
 
         raise(ArgumentError, "Failed to find the Top Container resource for #{barcode}") if top_container.nil?
 
