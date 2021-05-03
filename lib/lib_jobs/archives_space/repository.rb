@@ -179,13 +179,19 @@ module LibJobs
         resource
       end
 
+      def find_child_by(resource_class:, model_class:, uri: nil, child_id: nil, cache: true)
+        uri = "/repositories/#{@id}/#{resource_class.name.demodulize.pluralize.underscore}/#{child_id}" if uri.nil? && !child_id.nil?
+
+        find_child(uri: uri.to_s, resource_class: resource_class, model_class: model_class, cache: cache)
+      end
+
       # Deprecate
       def find_resource(uri:, cache: true)
         find_child(uri: uri, resource_class: Resource, model_class: Resource.model_class, cache: cache)
       end
 
-      def find_resource_by(uri:, cache: true)
-        find_child(uri: uri, resource_class: Resource, model_class: Resource.model_class, cache: cache)
+      def find_resource_by(uri: nil, id: nil, cache: true)
+        find_child_by(resource_class: Resource, model_class: Resource.model_class, uri: uri, child_id: id, cache: cache)
       end
 
       # This does not have a caching option
