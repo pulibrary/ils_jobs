@@ -89,13 +89,6 @@ class AbsoluteId < ApplicationRecord
     prefixes[key]
   end
 
-  def self.find_prefixed_models(prefix:)
-    models = all
-    models.select do |model|
-      model.size == prefix
-    end
-  end
-
   def self.xml_serializer
     AbsoluteIds::Serializers::AbsoluteIdXmlSerializer
   end
@@ -105,20 +98,8 @@ class AbsoluteId < ApplicationRecord
   end
   delegate :digits, :elements, to: :barcode
 
-  def find_local_prefixes(key)
-    self.class.local_prefixes[key]
-  end
-
   def local_prefixes
-    @local_prefixes ||= begin
-                          if location_object.name
-                            find_local_prefixes(location.key)
-                          elsif self.class.local_prefixes.key?(location)
-                            find_local_prefixes(location)
-                          else
-                            {}
-                          end
-                        end
+    @local_prefixes ||= find_local_prefixes(prefix_key)
   end
 
   def prefixes
@@ -261,6 +242,14 @@ class AbsoluteId < ApplicationRecord
   end
 
   private
+
+  def prefix_key
+    location_object.classification || location
+  end
+
+  def find_local_prefixes(key)
+    self.class.local_prefixes[key] || {}
+  end
 
   def json_attribute(value)
     return value if value.is_a?(Hash)

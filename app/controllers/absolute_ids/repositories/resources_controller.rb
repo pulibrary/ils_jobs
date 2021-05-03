@@ -21,7 +21,7 @@ class AbsoluteIds::Repositories::ResourcesController < ApplicationController
   # GET /absolute-ids/repositories/:repository_id/resources/:resource_id.json
   def show
     begin
-      @resource ||= current_repository.find_resource(id: resource_id)
+      @resource ||= current_repository.find_resource_by(id: resource_id)
     rescue StandardError => error
       Rails.logger.warn("Failed to resolve the resource #{resource_id} for the repository #{repository_id}: #{error}")
       @resource = nil
@@ -42,12 +42,8 @@ class AbsoluteIds::Repositories::ResourcesController < ApplicationController
       @resource = nil
     end
 
-    if json_request?
-      render json: @resource
-    else
-      respond_to do |format|
-        format.json { render json: @resource }
-      end
+    respond_to do |format|
+      format.json { render json: @resource }
     end
   end
 
@@ -55,10 +51,6 @@ class AbsoluteIds::Repositories::ResourcesController < ApplicationController
 
   def ead_id
     params[:eadId]
-  end
-
-  def resource_param
-    params[:resource_param]
   end
 
   def repository_id
