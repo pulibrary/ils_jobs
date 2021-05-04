@@ -56,6 +56,7 @@ module LibJobs
 
       def select_repositories_by(repo_code: nil, classification: nil)
         output = repositories.select do |repository|
+          repository.classification
           if !classification.nil?
             repository.classification == classification
           elsif !repo_code.nil?
