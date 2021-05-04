@@ -47,11 +47,11 @@ module LibJobs
 
       # Deprecate this
       def find_repository(uri: nil, id: nil)
-        find_child(uri: uri, resource_class: Repository, model_class: Repository.model_class, id: id)
+        find_child_by(uri: uri, resource_class: Repository, model_class: Repository.model_class, child_id: id)
       end
 
       def find_repository_by(uri: nil, id: nil)
-        find_child(uri: uri, resource_class: Repository, model_class: Repository.model_class, id: id)
+        find_child_by(uri: uri, resource_class: Repository, model_class: Repository.model_class, child_id: id)
       end
 
       def select_repositories_by(repo_code: nil, classification: nil)
@@ -64,6 +64,7 @@ module LibJobs
             false
           end
         end
+
         output.to_a
       end
 
@@ -92,12 +93,12 @@ module LibJobs
       end
 
       def find_location_by(uri:)
-        find_child_by(uri: uri, resource_class: Location, model_class: Location.model_class)
+        find_child_by(uri: uri, resource_class: Location)
       end
 
       private
 
-      def find_child(uri:, resource_class:, model_class:)
+      def find_child(uri:, resource_class:, model_class: nil)
         model_class ||= resource_class.model_class unless resource_class.nil? || !resource_class.model_class_exists?
         unless model_class.nil?
           cached = model_class.find_cached(uri, self)
@@ -115,7 +116,7 @@ module LibJobs
         model_class&.cache(built) || built
       end
 
-      def find_child_by(resource_class:, model_class:, uri: nil, child_id: nil)
+      def find_child_by(resource_class:, model_class: nil, uri: nil, child_id: nil)
         uri = "/#{resource_class.name.demodulize.pluralize.underscore}/#{child_id}" if uri.nil? && !child_id.nil?
 
         find_child(uri: uri.to_s, resource_class: resource_class, model_class: model_class)
