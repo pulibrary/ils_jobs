@@ -45,7 +45,7 @@ module AbsoluteIds
       end
 
       # Location
-      locations = client.select_locations_by(classification: repo_code)
+      locations = client.select_locations_by(repo_code: repo_code)
       location = locations.first
       if !location.nil?
 
