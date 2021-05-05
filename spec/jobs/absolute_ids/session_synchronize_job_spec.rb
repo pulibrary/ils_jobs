@@ -138,7 +138,7 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
       allow(LibJobs::ArchivesSpace::Client).to receive(:source).and_return(source_client)
     end
 
-    it 'updates the ArchivesSpace TopContainer indicator and barcode fields with that of the AbId' do
+    it 'updates the ArchivesSpace TopContainer indicator and barcode fields with that of the AbID' do
       described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
 
       expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/118091").with(
@@ -147,6 +147,57 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
           'Content-Type' => 'application/json'
         }
       )).to have_been_made
+    end
+
+    context 'when a TopContainer is linked to multiple Locations' do
+      let(:source_client) do
+        stubbed_client = stub_aspace_source_client
+        stubbed_client = stub_aspace_location(location_id: 23_640, client: stubbed_client)
+        stubbed_client = stub_aspace_location(location_id: 23_652, client: stubbed_client)
+        stubbed_client = stub_aspace_top_container(repository_id: 4, top_container_id: 118_091, client: stubbed_client)
+        stubbed_client = stub_aspace_repository(repository_id: 4, client: stubbed_client)
+        stubbed_client = stub_aspace_resource(repository_id: 4, resource_id: 4188, client: stubbed_client)
+        stubbed_client
+      end
+      let(:location_fixture_path) do
+        Rails.root.join('spec', 'fixtures', 'archives_space', 'locations', '23652.json')
+      end
+      let(:location_fixture) do
+        File.read(location_fixture_path)
+      end
+      let(:location) do
+        JSON.parse(location_fixture)
+      end
+      let(:container) do
+        parsed = JSON.parse(container_fixture)
+        parsed[:container_locations] = [
+          location
+        ]
+        parsed
+      end
+
+      before do
+        stub_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23652")
+        stub_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23640")
+      end
+
+      it 'updates the ArchivesSpace TopContainer with the multiple' do
+        described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
+
+        expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23652").with(
+          body: post_params,
+          headers: {
+            'Content-Type' => 'application/json'
+          }
+        )).to have_been_made
+
+        expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23640").with(
+          body: post_params,
+          headers: {
+            'Content-Type' => 'application/json'
+          }
+        )).to have_been_made
+      end
     end
 
     context 'when a TopContainer has already using an existing barcode' do
@@ -192,6 +243,25 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
         )).not_to have_been_made
 
         expect(logger).to have_received(:warn).with("Warning: Failed to synchronize #{absolute_id.label}: The Absolute ID #{absolute_id.label} is not unique")
+      end
+    end
+
+    context 'when encountering an error updating a TopContainer' do
+      let(:logger) { instance_double(ActiveSupport::Logger) }
+      let(:updated) { absolute_id.reload }
+
+      before do
+        stub_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/118091").to_raise(LibJobs::ArchivesSpace::UpdateRecordError)
+
+        allow(logger).to receive(:warn)
+        allow(Rails).to receive(:logger).and_return(logger)
+      end
+
+      it 'raises an error and logs a warning' do
+        described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
+
+        expect(logger).to have_received(:warn).with(/Warning: Failed to synchronize #{updated.label}: /)
+        expect(updated.synchronize_status).to eq('synchronization failed')
       end
     end
   end
