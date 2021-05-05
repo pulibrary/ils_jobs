@@ -181,17 +181,54 @@ RSpec.describe AbsoluteIds::SessionSynchronizeJob, type: :job do
         stub_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23640")
       end
 
+      let(:post_params) do
+        {
+          jsonmodel_type: "top_container",
+          lock_version: 4,
+          active_restrictions: [],
+          container_locations: [
+            {
+              jsonmodel_type: "container_location",
+              status: "current",
+              start_date: "2021-01-22",
+              system_mtime: "2021-01-22T22:29:47Z",
+              user_mtime: "2021-01-22T22:29:47Z",
+              ref: "/locations/23652"
+            }
+          ],
+          series: [],
+          collection: [
+            {
+              ref: "/repositories/4/resources/4188",
+              identifier: "ABID001",
+              display_string: "AbID Testing Resource #1"
+            }
+          ],
+          indicator: "P-000000",
+          type: "box",
+          barcode: "32101103191142",
+          ils_holding_id: nil,
+          ils_item_id: nil,
+          exported_to_ils: nil
+        }
+      end
+
       it 'updates the ArchivesSpace TopContainer with the multiple' do
         described_class.perform_now(user_id: user.id, model_id: absolute_id.id)
 
         expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23652").with(
-          body: post_params,
+          body: '{}',
           headers: {
             'Content-Type' => 'application/json'
           }
         )).to have_been_made
-
-        expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/location?ids%5B%5D=118091&location_uri=/locations/23640").with(
+        expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/batch/container_profile?container_profile_uri=/container_profiles/2&ids%5b%5d=118091").with(
+          body: '{}',
+          headers: {
+            'Content-Type' => 'application/json'
+          }
+        )).to have_been_made
+        expect(a_request(:post, "#{sync_client.base_uri}/repositories/4/top_containers/118091").with(
           body: post_params,
           headers: {
             'Content-Type' => 'application/json'
