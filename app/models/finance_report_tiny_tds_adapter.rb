@@ -6,14 +6,12 @@ class FinanceReportTinyTdsAdapter
     @dbport = dbport
     @dbuser = dbuser
     @dbpass = dbpass
-  rescue TinyTds::Error => tds_error
-    Rails.logger.error("Failed to connect to the financial report server: #{tds_error}")
   end
 
   # @param query [string]
   # @return array of hashes where the column names are the keys
   def execute(query:)
-    client.execute(query).to_a
+    client.execute(query).to_a unless client.nil?
   end
 
   def execute_staff_query(employee_id:)
