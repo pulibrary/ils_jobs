@@ -40,13 +40,17 @@ class DataSetsController < ApplicationController
   # PATCH/PUT /data_sets/1.json
   def update
     respond_to do |format|
-      if @data_set.update(data_set_params)
-        format.html { redirect_to @data_set, notice: 'Data set was successfully updated.' }
-        format.json { render :show, status: :ok, location: @data_set }
-      else
-        format.html { render :edit }
-        format.json { render json: @data_set.errors, status: :unprocessable_entity }
-      end
+      @data_set.update(data_set_params)
+
+      format.html { redirect_to @data_set, notice: 'Data set was successfully updated.' }
+      format.json { render :show, status: :ok, location: @data_set }
+    end
+  rescue StandardError => error
+    respond_to do |format|
+      @data_set.errors.add(:base, error.message)
+
+      format.html { render :edit }
+      format.json { render json: @data_set.errors, status: :unprocessable_entity }
     end
   end
 
@@ -113,7 +117,9 @@ class DataSetsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def data_set_params
-    params.fetch(:data_set, {})
+    # params.fetch(:data_set, {})
+    # params.permit(data_set: [:category, :data, :data_file, :report_time])
+    params.fetch(:data_set, {}).permit!
   end
 
   def index_params
