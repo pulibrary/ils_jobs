@@ -26,13 +26,17 @@ class DataSetsController < ApplicationController
     @data_set = DataSet.new(data_set_params)
 
     respond_to do |format|
-      if @data_set.save
-        format.html { redirect_to @data_set, notice: 'Data set was successfully created.' }
-        format.json { render :show, status: :created, location: @data_set }
-      else
-        format.html { render :new }
-        format.json { render json: @data_set.errors, status: :unprocessable_entity }
-      end
+      @data_set.save
+      format.html { redirect_to @data_set, notice: 'Data set was successfully created.' }
+      format.json { render :show, status: :created, location: @data_set }
+    end
+  rescue StandardError => error
+    respond_to do |format|
+      @data_set = DataSet.new
+      @data_set.errors.add(:base, error.message)
+
+      format.html { render :new }
+      format.json { render json: @data_set.errors, status: :unprocessable_entity }
     end
   end
 

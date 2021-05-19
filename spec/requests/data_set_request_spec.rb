@@ -10,9 +10,108 @@ RSpec.describe "DataSets", type: :request do
   let(:today_time_string) { today.strftime('%Y-%m-%d %H:%M:%S %Z') }
 
   describe "GET /data_sets/new" do
+    before do
+      get "/data_sets/new"
+    end
+
+    it 'renders a newly-constructed Data Set Model' do
+      expect(response.status).to eq(200)
+      expect(response.body).to include('New Data Set')
+    end
   end
 
   describe "POST /data_sets" do
+    let(:category) { 'StaffDirectoryRemoved' }
+    let(:data) { 'abc123,def456' }
+    let(:data_file) { nil }
+    let(:params) do
+      {
+        data_set: {
+          category: category,
+          data: data,
+          data_file: data_file,
+          report_time: today
+        }
+      }
+    end
+
+    it 'creates a Data Set model' do
+      post "/data_sets", params: params
+      expect(DataSet.all).not_to be_empty
+      expect(DataSet.last.category).to eq(category)
+      expect(DataSet.last.data).to eq(data)
+      expect(DataSet.last.data_file).to eq(data_file)
+
+      expect(response).to redirect_to data_set_path(DataSet.last.id)
+    end
+
+    context 'when invalid POST request parameters are transmitted' do
+      let(:params) do
+        {
+          data_set: {
+            invalid: 'invalid'
+          }
+        }
+      end
+
+      it 'does not create a Data Set model' do
+        post "/data_sets", params: params
+        expect(DataSet.all).to be_empty
+
+        expect(response.status).to eq(200)
+        expect(response.body).to include('New Data Set')
+        expect(response.body).to include('unknown attribute &#39;invalid&#39; for DataSet.')
+      end
+    end
+
+    context 'when requesting a JSON response' do
+      let(:headers) do
+        {
+          "Accept" => "application/json"
+        }
+      end
+
+      it 'creates a Data Set model' do
+        post "/data_sets", headers: headers, params: params
+        expect(DataSet.all).not_to be_empty
+        expect(DataSet.last.category).to eq(category)
+        expect(DataSet.last.data).to eq(data)
+        expect(DataSet.last.data_file).to eq(data_file)
+
+        # expect(response).to redirect_to data_set_path(DataSet.last.id)
+        expect(response.status).to eq(201)
+        expect(response.body).not_to be_empty
+        json_response_body = JSON.parse(response.body)
+        expect(json_response_body).to include(
+          "id" => DataSet.last.id,
+          "created_at" => JSON.parse(DataSet.last.created_at.to_json),
+          "updated_at" => JSON.parse(DataSet.last.updated_at.to_json),
+          "url" => data_set_url(DataSet.last, format: :json)
+        )
+      end
+
+      context 'when invalid POST request parameters are transmitted' do
+        let(:params) do
+          {
+            data_set: {
+              invalid: 'invalid'
+            }
+          }
+        end
+
+        it 'does not create a Data Set model' do
+          post "/data_sets", headers: headers, params: params
+          expect(DataSet.all).to be_empty
+
+          expect(response.status).to eq(422)
+          expect(response.body).not_to be_empty
+          json_response_body = JSON.parse(response.body)
+          expect(json_response_body).to include(
+            "base" => ["unknown attribute 'invalid' for DataSet."]
+          )
+        end
+      end
+    end
   end
 
   describe "PATCH /data_sets/:id" do
